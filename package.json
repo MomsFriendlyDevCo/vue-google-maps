@@ -2,7 +2,7 @@
   "name": "@momsfriendlydevco/vue-google-maps",
   "version": "0.0.1",
   "description": "Google Maps components for Vue",
-  "main": "src/index.js",
+  "main": "dist/main.js",
   "scripts": {
     "build": "webpack --mode production",
     "build:dev": "webpack --mode development",
