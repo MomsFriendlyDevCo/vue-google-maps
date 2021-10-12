@@ -220,6 +220,13 @@ export default {
 		// TODO: Wait for an event?
 		this.ready = true;
 	},
+	created() {
+		this.$watch('mapTypeId', () => {
+			if (!this.mapTypeId) return;
+
+			this.mapObject.setMapTypeId(this.mapTypeId);
+		});
+	},
 };
 </script>
 
