@@ -7,7 +7,7 @@ import Options from '../mixins/Options.js';
  * Map component
  */
 export default {
-	name: 'GMap',
+	name: 'GMapRaster',
 	mixins: [Options],
 	props: {
 		/**

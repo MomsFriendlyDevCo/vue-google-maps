@@ -214,6 +214,43 @@ export default {
 		console.log('options', options);
 		this.mapObject = new google.maps.Map(this.$el, options);
 
+		const clicked = {
+			x: null,
+			y: null,
+		};
+		this.$el.addEventListener('mousemove', e => {
+			if (clicked.x === null || clicked.y === null) return;
+
+			const diff = {
+				x: clicked.x - e.pageX,
+				y: clicked.y - e.pageY,
+			};
+			clicked.x = e.pageX;
+			clicked.y = e.pageY;
+
+			this.mapObject.moveCamera({
+				heading: this.mapObject.getHeading() - diff.x,
+				tilt: this.mapObject.getTilt() + diff.y,
+				zoom: this.mapObject.getZoom(),
+			})
+		});
+
+		this.$el.addEventListener('pointerup', e => {
+			if (e.button !== 1) return;
+
+			clicked.x = null;
+			clicked.y = null;
+		});
+
+		this.$el.addEventListener('pointerdown', e => {
+			if (e.button !== 1) return;
+
+			clicked.x = e.pageX;
+			clicked.y = e.pageY;
+		});
+
+		// TODO: Update zoom and center on pan/zoom, but they're properties... Need to fire an event
+
 		// TODO: Wait for an event?
 		this.ready = true;
 	},
