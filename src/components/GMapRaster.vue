@@ -9,6 +9,9 @@ import Options from '../mixins/Options.js';
 export default {
 	name: 'GMapRaster',
 	mixins: [Options],
+	provide() { return {
+		map: this,
+	}},
 	props: {
 		/**
 		 * The center of the map, supports .sync modifier
@@ -39,7 +42,7 @@ export default {
 		zoom: {
 			type: Number,
 			custom: true,
-			default: 0,
+			default: 16,
 		},
 		/**
 		 * The minZoom of the map
@@ -182,7 +185,7 @@ export default {
 				//noClear: true,
 				//tilt: 0,
 				//heading: 0,
-				zoom: 16,
+				//zoom: 16,
 				// TODO: minZoom, maxZoom
 				disableDefaultUI: true,
 				//gestureHandling: 'none',
