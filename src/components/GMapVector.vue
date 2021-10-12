@@ -214,6 +214,8 @@ export default {
 		console.log('options', options);
 		this.mapObject = new google.maps.Map(this.$el, options);
 
+		// Track middle-mouse for rotate/tilt {{{
+		// FIXME: Fails until first pan or zoom
 		const clicked = {
 			x: null,
 			y: null,
@@ -248,6 +250,7 @@ export default {
 			clicked.x = e.pageX;
 			clicked.y = e.pageY;
 		});
+		// }}}
 
 		// TODO: Update zoom and center on pan/zoom, but they're properties... Need to fire an event
 
