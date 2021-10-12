@@ -2,4 +2,5 @@
 
 export { default as OptionsMixin } from './mixins/Options';
 
-export { default as GMap } from './components/GMap';
+export { default as GMapRaster } from './components/GMapRaster';
+export { default as GMapVector } from './components/GMapVector';

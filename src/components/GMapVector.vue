@@ -7,7 +7,7 @@ import Options from '../mixins/Options.js';
  * Map component
  */
 export default {
-	name: 'GMap',
+	name: 'GMapVector',
 	mixins: [Options],
 	props: {
 		/**
@@ -150,6 +150,15 @@ export default {
 		*/
 
 		// TODO: mapTypeId
+
+		mapTypeId: {
+			type: String,
+			default: 'roadmap',
+		},
+		mapId: {
+			type: String,
+			default: '15431d2b469f209e', // This is a pre-defined vector map with tilt/heading enabled.
+		},
 	},
 	data() { return {
 		ready: false,
@@ -158,26 +167,38 @@ export default {
 		
 	},
 	beforeDestroy() {
-		//if (this.debouncedMoveEndHandler) {
-		//  this.debouncedMoveEndHandler.cancel();
-		//}
-
-		//if (this.mapObject) {
-		//	this.mapObject.remove();
-		//}
+		if (this.mapObject) {
+			google.maps.event.clearInstanceListeners(window);
+			google.maps.event.clearInstanceListeners(document);
+			google.maps.event.clearInstanceListeners(this.$el);
+			$(this.$el).detach()
+			this.mapObject = null;
+		}
 	},
 	mounted() {
-		console.log('props', this.$props);
-		const options = {
-			mapTypeId: 'hybrid',
-			//noClear: true,
-			center: {
+		const options = _.defaults(_.omit(this.$props, ['center', 'maxBounds']),
+			{
+				//mapTypeId: 'hybrid',
+				//noClear: true,
+				//tilt: 0,
+				//heading: 0,
+				zoom: 16,
+				// TODO: minZoom, maxZoom
+				disableDefaultUI: true,
+				//gestureHandling: 'none',
+				keyboardShortcuts: false,
+				rotateControl: true,
+				scrollwheel: true,
+				streetViewControl: false,
+				zoomControl: false,
+			}
+		);
+
+		if (this.center && this.center.length === 2) 
+			options.center = {
 				lat: this.center[0],
 				lng: this.center[1]
-			},
-			zoom: this.zoom,
-			// TODO: minZoom, maxZoom
-		};
+			};
 
 		if (this.maxBounds && this.maxBounds.length === 2 && this.maxBounds[0] && this.maxBounds[0].length === 2 && this.maxBounds[1] && this.maxBounds[1].length === 2)
 			options.restriction = {
@@ -192,6 +213,8 @@ export default {
 
 		console.log('options', options);
 		this.mapObject = new google.maps.Map(this.$el, options);
+
+		// TODO: Wait for an event?
 		this.ready = true;
 	},
 };
