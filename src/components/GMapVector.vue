@@ -217,6 +217,9 @@ export default {
 		console.log('options', options);
 		this.mapObject = new google.maps.Map(this.$el, options);
 
+		this.mapObject.addListener('center_changed', e => this.$emit('moveend', [this.mapObject.getCenter().lat(), this.mapObject.getCenter().lng()]));
+		this.mapObject.addListener('zoom_changed', e => this.$emit('zoomend', this.mapObject.getZoom()));
+
 		// Track middle-mouse for rotate/tilt {{{
 		// FIXME: Fails until first pan or zoom
 		const clicked = {
