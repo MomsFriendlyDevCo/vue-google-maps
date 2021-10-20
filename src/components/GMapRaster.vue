@@ -37,6 +37,14 @@ export default {
 			default: null,
 		},
 		/**
+		 * The heading or rotation of the map, supports .sync modifier
+		 */
+		heading: {
+			type: Number,
+			custom: true,
+			default: 0,
+		},
+		/**
 		 * The zoom of the map, supports .sync modifier
 		 */
 		zoom: {
@@ -218,6 +226,7 @@ export default {
 		this.mapObject = new google.maps.Map(this.$el, options);
 
 		this.mapObject.addListener('center_changed', e => this.$emit('moveend', [this.mapObject.getCenter().lat(), this.mapObject.getCenter().lng()]));
+		this.mapObject.addListener('heading_changed', e => this.$emit('headingend', this.mapObject.getHeading()));
 		this.mapObject.addListener('zoom_changed', e => this.$emit('zoomend', this.mapObject.getZoom()));
 
 		// TODO: Wait for an event?
