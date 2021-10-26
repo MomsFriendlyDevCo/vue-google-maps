@@ -174,9 +174,6 @@ export default {
 	data() { return {
 		ready: false,
 	}},
-	methods: {
-		
-	},
 	beforeDestroy() {
 		if (this.mapObject) {
 			google.maps.event.clearInstanceListeners(window);
@@ -229,7 +226,7 @@ export default {
 		this.mapObject.addListener('heading_changed', e => this.$emit('headingend', this.mapObject.getHeading()));
 		this.mapObject.addListener('zoom_changed', e => this.$emit('zoomend', this.mapObject.getZoom()));
 
-		// TODO: Animate movement towards new center
+		// TODO: Encapsulate duplication
 		this.$watch('center', () => {
 			if (this.center[0] !== this.mapObject.getCenter().lat() && this.center[1] !== this.mapObject.getCenter().lng()) {
 				this.mapObject.setCenter({
@@ -245,15 +242,28 @@ export default {
 			}
 		});
 
+		this.$watch('maxBounds', () => {
+			if (this.maxBounds && this.maxBounds.length === 2 && this.maxBounds[0] && this.maxBounds[0].length === 2 && this.maxBounds[1] && this.maxBounds[1].length === 2)
+				this.mapObject.setOptions({
+					restriction: {
+						latLngBounds: {
+							north: this.maxBounds[0][0],
+							south: this.maxBounds[1][0],
+							west: this.maxBounds[1][1],
+							east: this.maxBounds[0][1],
+						},
+						strictBounds: true,
+					}
+				});
+		});
+
+		this.$watch('mapTypeId', () => {
+			if (this.mapTypeId)
+				this.mapObject.setMapTypeId(this.mapTypeId);
+		});
+
 		// TODO: Wait for an event?
 		this.ready = true;
-	},
-	created() {
-		this.$watch('mapTypeId', () => {
-			if (!this.mapTypeId) return;
-
-			this.mapObject.setMapTypeId(this.mapTypeId);
-		});
 	},
 };
 </script>

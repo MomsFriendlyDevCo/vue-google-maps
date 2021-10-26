@@ -174,9 +174,6 @@ export default {
 	data() { return {
 		ready: false,
 	}},
-	methods: {
-		
-	},
 	beforeDestroy() {
 		if (this.mapObject) {
 			google.maps.event.clearInstanceListeners(window);
@@ -249,7 +246,7 @@ export default {
 				heading: this.mapObject.getHeading() - diff.x,
 				tilt: this.mapObject.getTilt() + diff.y,
 				zoom: this.mapObject.getZoom(),
-			})
+			});
 		});
 
 		this.$el.addEventListener('pointerup', e => {
@@ -267,33 +264,44 @@ export default {
 		});
 		// }}}
 
-		// TODO: Animate movement towards new center
+		// TODO: Encapsulate duplication
 		this.$watch('center', () => {
-			if (this.center[0] !== this.mapObject.getCenter().lat() && this.center[1] !== this.mapObject.getCenter().lng()) {
+			if (this.center[0] !== this.mapObject.getCenter().lat() && this.center[1] !== this.mapObject.getCenter().lng())
 				this.mapObject.setCenter({
 					lat: this.center[0],
 					lng: this.center[1],
 				});
-			}
 		});
 
 		this.$watch('zoom', () => {
-			if (this.zoom !== this.mapObject.getZoom()) {
+			if (this.zoom !== this.mapObject.getZoom())
 				this.mapObject.setZoom(this.zoom);
-			}
+		});
+
+		this.$watch('maxBounds', () => {
+			if (this.maxBounds && this.maxBounds.length === 2 && this.maxBounds[0] && this.maxBounds[0].length === 2 && this.maxBounds[1] && this.maxBounds[1].length === 2)
+				this.mapObject.setOptions({
+					restriction: {
+						latLngBounds: {
+							north: this.maxBounds[0][0],
+							south: this.maxBounds[1][0],
+							west: this.maxBounds[1][1],
+							east: this.maxBounds[0][1],
+						},
+						strictBounds: true,
+					}
+				});
+		});
+
+		this.$watch('mapTypeId', () => {
+			if (this.mapTypeId)
+				this.mapObject.setMapTypeId(this.mapTypeId);
 		});
 
 		// TODO: Update zoom and center on pan/zoom, but they're properties... Need to fire an event
 
 		// TODO: Wait for an event?
 		this.ready = true;
-	},
-	created() {
-		this.$watch('mapTypeId', () => {
-			if (!this.mapTypeId) return;
-
-			this.mapObject.setMapTypeId(this.mapTypeId);
-		});
 	},
 };
 </script>
