@@ -229,6 +229,22 @@ export default {
 		this.mapObject.addListener('heading_changed', e => this.$emit('headingend', this.mapObject.getHeading()));
 		this.mapObject.addListener('zoom_changed', e => this.$emit('zoomend', this.mapObject.getZoom()));
 
+		// TODO: Animate movement towards new center
+		this.$watch('center', () => {
+			if (this.center[0] !== this.mapObject.getCenter().lat() && this.center[1] !== this.mapObject.getCenter().lng()) {
+				this.mapObject.setCenter({
+					lat: this.center[0],
+					lng: this.center[1],
+				});
+			}
+		});
+
+		this.$watch('zoom', () => {
+			if (this.zoom !== this.mapObject.getZoom()) {
+				this.mapObject.setZoom(this.zoom);
+			}
+		});
+
 		// TODO: Wait for an event?
 		this.ready = true;
 	},

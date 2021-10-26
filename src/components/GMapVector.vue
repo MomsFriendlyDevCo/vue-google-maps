@@ -222,7 +222,6 @@ export default {
 				strictBounds: true,
 			};
 
-		console.log('options', options);
 		this.mapObject = new google.maps.Map(this.$el, options);
 
 		this.mapObject.addListener('center_changed', e => this.$emit('moveend', [this.mapObject.getCenter().lat(), this.mapObject.getCenter().lng()]));
@@ -267,6 +266,22 @@ export default {
 			clicked.y = e.pageY;
 		});
 		// }}}
+
+		// TODO: Animate movement towards new center
+		this.$watch('center', () => {
+			if (this.center[0] !== this.mapObject.getCenter().lat() && this.center[1] !== this.mapObject.getCenter().lng()) {
+				this.mapObject.setCenter({
+					lat: this.center[0],
+					lng: this.center[1],
+				});
+			}
+		});
+
+		this.$watch('zoom', () => {
+			if (this.zoom !== this.mapObject.getZoom()) {
+				this.mapObject.setZoom(this.zoom);
+			}
+		});
 
 		// TODO: Update zoom and center on pan/zoom, but they're properties... Need to fire an event
 
