@@ -179,7 +179,7 @@ export default {
 			google.maps.event.clearInstanceListeners(window);
 			google.maps.event.clearInstanceListeners(document);
 			google.maps.event.clearInstanceListeners(this.$el);
-			$(this.$el).detach()
+			this.$el.remove();
 			this.mapObject = null;
 		}
 	},
