@@ -112,6 +112,7 @@ export default {
 		this.ready = true;
 	},
 	render: function(h) {
+		// FIXME: Node cannot be found in the current page
 		if (this.ready && this.$slots.default) {
 			return h('div', { style: { display: 'none' } }, this.$slots.default);
 		}
