@@ -88,6 +88,24 @@ export default {
 			map: this.map.mapObject,
 		});
 
+		// TODO: Some kind of binding helper?
+
+		// Google Maps events:
+		// animation_changed, click, clickable_changed, contextmenu, cursor_changed, dblclick, 
+		// drag, dragend, draggable_changed, dragstart, flat_changed, icon_changed, 
+		// mousedown, mouseout, mouseover, mouseup, position_changed, rightclick, 
+		// shape_changed, title_changed, visible_changed, zindex_changed
+
+		/*
+		// Is this pattern better at handling internal events?
+		google.maps.event.addListener(this.mapObject, 'mouseover', e => {
+			console.log('mouseover', 'google', e);
+			//this.$emit('mouseover', e);
+		});
+		*/
+
+		this.mapObject.addListener('mouseover', e => this.$emit('mouseover', e));
+		this.mapObject.addListener('mouseout', e => this.$emit('mouseout', e));
 		this.mapObject.addListener('click', e => this.$emit('click', e));
 
 		// TODO: Wait for an event?
