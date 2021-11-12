@@ -8,3 +8,4 @@ export { default as GMarker } from './components/GMarker';
 export { default as GPolyline } from './components/GPolyline';
 
 export { default as GCustomPopup } from './components/GCustomPopup';
+export { default as GHtmlMarker } from './components/GHtmlMarker';
