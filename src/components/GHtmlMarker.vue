@@ -30,7 +30,6 @@ export default {
 				super();
 				this.position = position;
 
-				console.log('content', content);
 				this.containerDiv = document.createElement('div');
 				this.containerDiv.appendChild(content);
 				this.containerDiv.classList.add('g-html-marker-container');
@@ -40,7 +39,6 @@ export default {
 			}
 			onAdd() {
 				// TODO: Use `overlayImage` or `floatPane` or `markerLayer` pane?
-				console.log('onAdd', this.getPanes(), this.containerDiv);
 				this.getPanes().markerLayer.appendChild(this.containerDiv);
 			}
 			onRemove() {
