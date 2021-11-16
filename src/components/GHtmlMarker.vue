@@ -71,7 +71,9 @@ export default {
 					google.maps.event.addDomListener(
 						this.containerDiv,
 						event,
-						() => google.maps.event.trigger(this, event)
+						() => google.maps.event.trigger(this, event, {
+							latLng: this.getPosition(),
+						})
 					);
 				});
 
@@ -130,6 +132,13 @@ export default {
 			this.$el
 		);
 		this.mapObject.setMap(this.map.mapObject);
+
+		// TODO: Any other events?
+		// TODO: clickable moderates which events?
+		// TODO: draggable moderates which events?
+		this.mapObject.addListener('mouseover', e => this.$emit('mouseover', e));
+		this.mapObject.addListener('mouseout', e => this.$emit('mouseout', e));
+		this.mapObject.addListener('click', e => this.$emit('click', e));
 
 		// TODO: Wait for an event?
 		this.ready = true;
