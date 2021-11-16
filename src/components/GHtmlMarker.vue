@@ -17,6 +17,14 @@ export default {
 			custom: true,
 			default: null,
 		},
+		draggable: {
+			type: Boolean,
+			default: false,
+		},
+		pane: {
+			type: String,
+			default: 'overlayImage', // 'markerLayer' <- Is below other interactive layers,
+		},
 	},
 	data() { return {
 		ready: false,
@@ -24,35 +32,87 @@ export default {
 	mounted() {
 		class HtmlMarker extends google.maps.OverlayView {
 			position;
+			draggable;
+			pane;
+			content;
 			containerDiv;
 
-			constructor(position, content) {
+			constructor(position, draggable, pane, content) {
 				super();
 				this.position = position;
+				this.draggable = draggable;
+				this.pane = pane;
+				this.content = content;
 
+				this.createDiv();
+			}
+
+			createDiv() {
 				this.containerDiv = document.createElement('div');
-				this.containerDiv.appendChild(content);
+				this.containerDiv.appendChild(this.content);
 				this.containerDiv.classList.add('g-html-marker-container');
+
+				// TODO: Any other events?
+				// TODO: draggable moderates which events?
+				[
+					'mouseover',
+					'mouseout',
+					'mouseenter',
+					'mouseleave',
+					'click',
+					'touchstart',
+					'touchend'
+				].forEach(event => {
+					google.maps.event.addDomListener(
+						this.containerDiv,
+						event,
+						() => google.maps.event.trigger(this, event)
+					);
+				});
 
 				// Optionally stop clicks, etc., from bubbling up to the map.
 				//HtmlMarker.preventMapHitsAndGesturesFrom(this.containerDiv);
 			}
-			onAdd() {
-				// TODO: Use `overlayImage` or `floatPane` or `markerLayer` pane?
-				this.getPanes().markerLayer.appendChild(this.containerDiv);
+
+			appendDivToPane() {
+				const panes = this.getPanes();
+				panes[this.pane].appendChild(this.containerDiv);
 			}
-			onRemove() {
-				if (this.containerDiv.parentElement) {
-					this.containerDiv.parentElement.removeChild(this.containerDiv);
+
+			positionDiv() {
+				const point = this.getProjection().fromLatLngToDivPixel(this.position);
+				if (point) {
+					this.containerDiv.style.left = `${point.x}px`;
+					this.containerDiv.style.top = `${point.y}px`;
 				}
 			}
-			draw() {
-				const divPosition = this.getProjection().fromLatLngToDivPixel(
-					this.position
-				);
 
-				this.containerDiv.style.left = divPosition.x + "px";
-				this.containerDiv.style.top = divPosition.y + "px";
+			onAdd() {
+				this.appendDivToPane();
+			}
+
+			onRemove() {
+				// FIXME: parentElement or parentNode?
+				if (this.containerDiv.parentElement) {
+					this.containerDiv.parentElement.removeChild(this.containerDiv);
+					this.containerDiv = null;
+				}
+			}
+
+			draw() {
+				if (!this.containerDiv) {
+					this.createDiv();
+					this.appendDivToPane();
+				}
+				this.positionDiv();
+			}
+
+			getPosition() {
+				return this.position;
+			}
+
+			getDraggable() {
+				return this.draggable;
 			}
 		};
 
@@ -60,6 +120,8 @@ export default {
 			// FIXME: Accept array or object...
 			//_.isObject(this.position) ? this.position : google.maps.LatLng(...this.position),
 			new google.maps.LatLng(...this.position),
+			this.draggable,
+			this.pane,
 			this.$el
 		);
 		this.mapObject.setMap(this.map.mapObject);
