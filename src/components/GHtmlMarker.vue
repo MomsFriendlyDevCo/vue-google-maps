@@ -17,6 +17,10 @@ export default {
 			custom: true,
 			default: null,
 		},
+		clickable: {
+			type: Boolean,
+			default: true,
+		},
 		draggable: {
 			type: Boolean,
 			default: false,
@@ -53,6 +57,7 @@ export default {
 				this.containerDiv.classList.add('g-html-marker-container');
 
 				// TODO: Any other events?
+				// TODO: clickable moderates which events?
 				// TODO: draggable moderates which events?
 				[
 					'mouseover',
