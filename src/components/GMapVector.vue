@@ -45,6 +45,14 @@ export default {
 			default: 0,
 		},
 		/**
+		 * The tilt of the camera
+		 */
+		tilt: {
+			type: Number,
+			custom: true,
+			default: 0,
+		},
+		/**
 		 * The zoom of the map, supports .sync modifier
 		 */
 		zoom: {
@@ -223,7 +231,7 @@ export default {
 
 		this.mapObject.addListener('center_changed', e => this.$emit('moveend', [this.mapObject.getCenter().lat(), this.mapObject.getCenter().lng()]));
 		this.mapObject.addListener('heading_changed', e => this.$emit('headingend', this.mapObject.getHeading()));
-		// TODO: Impletment tilt. Note that `getTilt()` is not same as `options.tilt`
+		this.mapObject.addListener('tilt_changed', e => this.$emit('tiltend', this.mapObject.getTilt()));
 		this.mapObject.addListener('zoom_changed', e => this.$emit('zoomend', this.mapObject.getZoom()));
 
 		// Track middle-mouse for rotate/tilt {{{
