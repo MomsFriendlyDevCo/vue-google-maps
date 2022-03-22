@@ -234,7 +234,7 @@ export default {
 		this.mapObject.addListener('tilt_changed', e => this.$emit('tiltend', this.mapObject.getTilt()));
 		this.mapObject.addListener('zoom_changed', e => this.$emit('zoomend', this.mapObject.getZoom()));
 
-		// Track middle-mouse for rotate/tilt {{{
+		// Track middle-mouse for heading/tilt {{{
 		// FIXME: Fails until first pan or zoom
 		const clicked = {
 			x: null,
@@ -280,6 +280,8 @@ export default {
 					lng: this.center[1],
 				});
 		});
+
+		// TODO: Watch heading and tilt?
 
 		this.$watch('zoom', () => {
 			if (this.zoom !== this.mapObject.getZoom())
