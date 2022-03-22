@@ -44,6 +44,7 @@ export default {
 			custom: true,
 			default: 0,
 		},
+		// TODO: Tilt is supported but only 0/45 and only satellite or hybrid raster maps
 		/**
 		 * The zoom of the map, supports .sync modifier
 		 */
