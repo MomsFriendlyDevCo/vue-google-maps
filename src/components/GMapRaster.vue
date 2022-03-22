@@ -237,6 +237,8 @@ export default {
 			}
 		});
 
+		// TODO: Watch heading also here? Tilt, raster mode has 0/45 switch...
+
 		this.$watch('zoom', () => {
 			if (this.zoom !== this.mapObject.getZoom()) {
 				this.mapObject.setZoom(this.zoom);

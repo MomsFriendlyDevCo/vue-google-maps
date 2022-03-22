@@ -281,7 +281,15 @@ export default {
 				});
 		});
 
-		// TODO: Watch heading and tilt?
+		this.$watch('heading', () => {
+			if (this.heading !== this.mapObject.getHeading())
+				this.mapObject.setHeading(this.heading);
+		});
+
+		this.$watch('tilt', () => {
+			if (this.tilt !== this.mapObject.getTilt())
+				this.mapObject.setTilt(this.tilt);
+		});
 
 		this.$watch('zoom', () => {
 			if (this.zoom !== this.mapObject.getZoom())
