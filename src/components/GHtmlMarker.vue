@@ -88,6 +88,7 @@ export default {
 
 			positionDiv() {
 				const point = this.getProjection().fromLatLngToDivPixel(this.position);
+				// Size of the div is intended to be compensated for by CSS class with absolute position
 				if (point) {
 					this.containerDiv.style.left = `${point.x}px`;
 					this.containerDiv.style.top = `${point.y}px`;
