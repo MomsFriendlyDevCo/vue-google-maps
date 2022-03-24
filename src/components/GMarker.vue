@@ -72,10 +72,8 @@ export default {
 	data() { return {
 		ready: false,
 	}},
-	methods: {
-		
-	},
 	beforeDestroy() {
+		this.mapObject.setMap(null);
 	},
 	mounted() {
 		this.mapObject = new google.maps.Marker({

@@ -20,6 +20,9 @@ export default {
 	data() { return {
 		ready: false,
 	}},
+	beforeDestroy() {
+		this.mapObject.setMap(null);
+	},
 	mounted() {
 		this.mapObject = new google.maps.Polyline({
 			...this.pathOptions,
