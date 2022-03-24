@@ -18,14 +18,11 @@ export default {
 			default: 'markerPane',
 		},
 		*/
-		/*
-		// TODO:
 		draggable: {
 			type: Boolean,
 			custom: true,
 			default: false,
 		},
-		*/
 		position: {
 			type: [Object, Array],
 			custom: true,
@@ -79,12 +76,15 @@ export default {
 		this.mapObject = new google.maps.Marker({
 			// TODO: Handle array or object
 			position: { lat: this.position[0], lng: this.position[1] },
+			draggable: this.draggable,
 			label: this.label,
 			icon: this.icon,
 			shape: this.shape,
 			title: this.label?.text || '',
 			map: this.map.mapObject,
 		});
+
+		this.$watch('draggable', () => this.mapObject.setDraggable(this.draggable));
 
 		// TODO: Some kind of binding helper?
 
@@ -101,6 +101,15 @@ export default {
 			//this.$emit('mouseover', e);
 		});
 		*/
+
+		this.mapObject.addListener('dragend', e => {
+			const evt = {
+				lat: e.latLng.lat(),
+				lng: e.latLng.lng(),
+			};
+			this.$emit('update:latLng', evt);
+			this.$emit('update:lat-lng', evt);
+		});
 
 		this.mapObject.addListener('mouseover', e => this.$emit('mouseover', e));
 		this.mapObject.addListener('mouseout', e => this.$emit('mouseout', e));
