@@ -115,6 +115,26 @@ export default {
 		this.mapObject.addListener('mouseout', e => this.$emit('mouseout', e));
 		this.mapObject.addListener('click', e => this.$emit('click', e));
 
+		/*
+		[
+			'mouseover',
+			'mouseout',
+			'mouseenter',
+			'mouseleave',
+			'click',
+			'touchstart',
+			'touchend'
+		].forEach(event => {
+			google.maps.event.addDomListener(
+				this.mapObject, // TODO: this.$el?
+				event,
+				() => google.maps.event.trigger(this, event, {
+					latLng: this.getPosition(),
+				})
+			);
+		});
+		*/
+
 		// TODO: Wait for an event?
 		this.ready = true;
 	},

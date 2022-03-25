@@ -48,6 +48,11 @@ export default {
 				this.pane = pane;
 				this.content = content;
 
+				this.handleDragDown;
+				this.handleDragMove;
+				this.handleDragLeave;
+				this.handleDragUp;
+
 				this.createDiv();
 			}
 
@@ -86,6 +91,77 @@ export default {
 				panes[this.pane].appendChild(this.containerDiv);
 			}
 
+			attachEvents() {
+				if (!this.draggable) {
+					google.maps.event.removeListener(this.handleDragLeave);
+					google.maps.event.removeListener(this.handleDragDown);
+					google.maps.event.removeListener(this.handleDragMove);
+					google.maps.event.removeListener(this.handleDragUp);
+
+					this.getMap().setOptions({
+						gestureHandling: 'greedy',
+					});
+					return;
+				}
+
+				// Trigger mouseup when leaving area
+				this.handleDragLeave = google.maps.event.addDomListener(this.containerDiv,
+					'mouseleave',
+					() => google.maps.event.trigger(this.containerDiv, 'mouseup'),
+				);
+
+				let origin;
+				this.handleDragDown = google.maps.event.addDomListener(
+					this.containerDiv,
+					'mousedown',
+					e => {
+						this.getMap().setOptions({
+							gestureHandling: 'none',
+						});
+
+						origin = e;
+						this.handleDragMove = google.maps.event.addDomListener(
+							this.getMap().getDiv(),
+							'mousemove',
+							e => {
+								const deltas = {
+									x: origin.clientX - e.clientX,
+									y: origin.clientY - e.clientY,
+								};
+								const pos = this.getProjection()
+									.fromLatLngToDivPixel(this.position);
+								const latLng = this.getProjection()
+									.fromDivPixelToLatLng(new google.maps.Point(
+										pos.x-deltas.x,
+										pos.y-deltas.y,
+									));
+
+								this.position = latLng;
+								this.positionDiv();
+								origin = e;
+							}
+						);
+
+					}
+				);
+
+				this.handleDragUp = google.maps.event.addDomListener(
+					this.containerDiv,
+					'mouseup',
+					() => {
+						google.maps.event.removeListener(this.handleDragMove);
+
+						this.getMap().setOptions({
+							gestureHandling: 'greedy',
+						});
+
+						google.maps.event.trigger(this, 'dragend', {
+							latLng: this.position,
+						});
+					},
+				);
+			}
+
 			positionDiv() {
 				const point = this.getProjection().fromLatLngToDivPixel(this.position);
 				// Size of the div is intended to be compensated for by CSS class with absolute position
@@ -97,6 +173,7 @@ export default {
 
 			onAdd() {
 				this.appendDivToPane();
+				this.attachEvents();
 			}
 
 			onRemove() {
@@ -122,6 +199,12 @@ export default {
 			getDraggable() {
 				return this.draggable;
 			}
+
+			setDraggable(draggable) {
+				this.draggable = draggable;
+				this.attachEvents();
+				// TODO: Emit draggable_changed
+			}
 		};
 
 		this.mapObject = new HtmlMarker(
@@ -134,9 +217,20 @@ export default {
 		);
 		this.mapObject.setMap(this.map.mapObject);
 
+		this.$watch('draggable', () => this.mapObject.setDraggable(this.draggable));
+
 		// TODO: Any other events?
 		// TODO: clickable moderates which events?
 		// TODO: draggable moderates which events?
+		this.mapObject.addListener('dragend', e => {
+			const evt = {
+				lat: e.latLng.lat(),
+				lng: e.latLng.lng(),
+			};
+			this.$emit('update:latLng', evt);
+			this.$emit('update:lat-lng', evt);
+		});
+
 		this.mapObject.addListener('mouseover', e => this.$emit('mouseover', e));
 		this.mapObject.addListener('mouseout', e => this.$emit('mouseout', e));
 		this.mapObject.addListener('click', e => this.$emit('click', e));
