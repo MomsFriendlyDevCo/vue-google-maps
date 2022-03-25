@@ -115,6 +115,9 @@ export default {
 					this.containerDiv,
 					'mousedown',
 					e => {
+						google.maps.event.trigger(this, 'dragstart', {
+							latLng: this.position,
+						});
 						this.getMap().setOptions({
 							gestureHandling: 'none',
 						});
@@ -138,6 +141,9 @@ export default {
 
 								this.position = latLng;
 								this.positionDiv();
+								google.maps.event.trigger(this, 'drag', {
+									latLng: this.position,
+								});
 								origin = e;
 							}
 						);
