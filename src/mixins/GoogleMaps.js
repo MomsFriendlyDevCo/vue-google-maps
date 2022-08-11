@@ -12,11 +12,11 @@ export default {
 			google.maps.event.clearInstanceListeners(window);
 			google.maps.event.clearInstanceListeners(document);
 			google.maps.event.clearInstanceListeners(this.$el);
-			this.$el.remove();
+			this.$el.remove(); // FIXME: Reason? Something to do with Google Maps JS handling of multiple elements? If an issue create a sub-element and remove that instead.
 			this.mapObject = null;
 		}
 	},
-	created() {
+	mounted() {
 		if (typeof google === 'undefined') {
 			window.initGoogleMaps = this.initGoogleMaps; // Globally accessible callback for Google
 			const script = document.createElement('script');
