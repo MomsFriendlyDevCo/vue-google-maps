@@ -1,5 +1,6 @@
 <script>
 //import { optionsMerger, propsBinder, debounce } from '../utils/utils.js';
+import GoogleMaps from '../mixins/GoogleMaps.js';
 import Options from '../mixins/Options.js';
 //import { CRS, DomEvent, map, latLngBounds, latLng } from 'leaflet';
 
@@ -8,7 +9,7 @@ import Options from '../mixins/Options.js';
  */
 export default {
 	name: 'GMapVector',
-	mixins: [Options],
+	mixins: [GoogleMaps, Options],
 	provide() { return {
 		map: this,
 	}},
@@ -182,145 +183,139 @@ export default {
 	data() { return {
 		ready: false,
 	}},
-	beforeDestroy() {
-		if (this.mapObject) {
-			google.maps.event.clearInstanceListeners(window);
-			google.maps.event.clearInstanceListeners(document);
-			google.maps.event.clearInstanceListeners(this.$el);
-			this.$el.remove();
-			this.mapObject = null;
-		}
-	},
-	mounted() {
-		const options = _.defaults(_.omit(this.$props, ['center', 'maxBounds']),
-			{
-				//mapTypeId: 'hybrid',
-				//noClear: true,
-				//tilt: 0,
-				//heading: 0,
-				//zoom: 16,
-				// TODO: minZoom, maxZoom
-				disableDefaultUI: true,
-				//gestureHandling: 'none',
-				keyboardShortcuts: false,
-				rotateControl: true,
-				scrollwheel: true,
-				streetViewControl: false,
-				zoomControl: false,
-			}
-		);
+	methods: {
+		initGoogleMaps() {
+			// TODO: "$props.options" should extend/overload these defaults until a provided property overrules it.
+			const options = _.defaults(_.omit(this.$props, ['center', 'maxBounds']),
+				{
+					//mapTypeId: 'hybrid',
+					//noClear: true,
+					//tilt: 0,
+					//heading: 0,
+					//zoom: 16,
+					// TODO: minZoom, maxZoom
+					disableDefaultUI: true,
+					//gestureHandling: 'none',
+					keyboardShortcuts: false,
+					rotateControl: true,
+					scrollwheel: true,
+					streetViewControl: false,
+					zoomControl: false,
+				}
+			);
 
-		if (this.center && this.center.length === 2) 
-			options.center = {
-				lat: this.center[0],
-				lng: this.center[1]
-			};
-
-		if (this.maxBounds && this.maxBounds.length === 2 && this.maxBounds[0] && this.maxBounds[0].length === 2 && this.maxBounds[1] && this.maxBounds[1].length === 2)
-			options.restriction = {
-				latLngBounds: {
-					north: this.maxBounds[0][0],
-					south: this.maxBounds[1][0],
-					west: this.maxBounds[1][1],
-					east: this.maxBounds[0][1],
-				},
-				strictBounds: true,
-			};
-
-		this.mapObject = new google.maps.Map(this.$el, options);
-
-		this.mapObject.addListener('center_changed', e => this.$emit('moveend', [this.mapObject.getCenter().lat(), this.mapObject.getCenter().lng()]));
-		this.mapObject.addListener('heading_changed', e => this.$emit('headingend', this.mapObject.getHeading()));
-		this.mapObject.addListener('tilt_changed', e => this.$emit('tiltend', this.mapObject.getTilt()));
-		this.mapObject.addListener('zoom_changed', e => this.$emit('zoomend', this.mapObject.getZoom()));
-
-		// Track middle-mouse for heading/tilt {{{
-		// FIXME: Fails until first pan or zoom
-		const clicked = {
-			x: null,
-			y: null,
-		};
-		this.$el.addEventListener('mousemove', e => {
-			if (clicked.x === null || clicked.y === null) return;
-
-			const diff = {
-				x: clicked.x - e.pageX,
-				y: clicked.y - e.pageY,
-			};
-			clicked.x = e.pageX;
-			clicked.y = e.pageY;
-
-			this.mapObject.moveCamera({
-				heading: this.mapObject.getHeading() - diff.x,
-				tilt: this.mapObject.getTilt() + diff.y,
-				zoom: this.mapObject.getZoom(),
-			});
-		});
-
-		this.$el.addEventListener('pointerup', e => {
-			if (e.button !== 1) return;
-
-			clicked.x = null;
-			clicked.y = null;
-		});
-
-		this.$el.addEventListener('pointerdown', e => {
-			if (e.button !== 1) return;
-
-			clicked.x = e.pageX;
-			clicked.y = e.pageY;
-		});
-		// }}}
-
-		// TODO: Encapsulate duplication
-		this.$watch('center', () => {
-			if (this.center[0] !== this.mapObject.getCenter().lat() && this.center[1] !== this.mapObject.getCenter().lng())
-				this.mapObject.setCenter({
+			if (this.center && this.center.length === 2) 
+				options.center = {
 					lat: this.center[0],
-					lng: this.center[1],
-				});
-		});
+					lng: this.center[1]
+				};
 
-		this.$watch('heading', () => {
-			if (this.heading !== this.mapObject.getHeading())
-				this.mapObject.setHeading(this.heading);
-		});
-
-		this.$watch('tilt', () => {
-			if (this.tilt !== this.mapObject.getTilt())
-				this.mapObject.setTilt(this.tilt);
-		});
-
-		this.$watch('zoom', () => {
-			if (this.zoom !== this.mapObject.getZoom())
-				this.mapObject.setZoom(this.zoom);
-		});
-
-		this.$watch('maxBounds', () => {
 			if (this.maxBounds && this.maxBounds.length === 2 && this.maxBounds[0] && this.maxBounds[0].length === 2 && this.maxBounds[1] && this.maxBounds[1].length === 2)
-				this.mapObject.setOptions({
-					restriction: {
-						latLngBounds: {
-							north: this.maxBounds[0][0],
-							south: this.maxBounds[1][0],
-							west: this.maxBounds[1][1],
-							east: this.maxBounds[0][1],
-						},
-						strictBounds: true,
-					}
+				options.restriction = {
+					latLngBounds: {
+						north: this.maxBounds[0][0],
+						south: this.maxBounds[1][0],
+						west: this.maxBounds[1][1],
+						east: this.maxBounds[0][1],
+					},
+					strictBounds: true,
+				};
+
+			this.mapObject = new google.maps.Map(this.$el, options);
+
+			this.mapObject.addListener('center_changed', e => this.$emit('moveend', [this.mapObject.getCenter().lat(), this.mapObject.getCenter().lng()]));
+			this.mapObject.addListener('heading_changed', e => this.$emit('headingend', this.mapObject.getHeading()));
+			this.mapObject.addListener('tilt_changed', e => this.$emit('tiltend', this.mapObject.getTilt()));
+			this.mapObject.addListener('zoom_changed', e => this.$emit('zoomend', this.mapObject.getZoom()));
+
+			// Track middle-mouse for heading/tilt {{{
+			// FIXME: Fails until first pan or zoom? Does it?
+			const clicked = {
+				x: null,
+				y: null,
+			};
+			this.$el.addEventListener('mousemove', e => {
+				if (clicked.x === null || clicked.y === null) return;
+
+				const diff = {
+					x: clicked.x - e.pageX,
+					y: clicked.y - e.pageY,
+				};
+				clicked.x = e.pageX;
+				clicked.y = e.pageY;
+
+				this.mapObject.moveCamera({
+					heading: this.mapObject.getHeading() - diff.x,
+					tilt: this.mapObject.getTilt() + diff.y,
+					zoom: this.mapObject.getZoom(),
 				});
-		});
+			});
 
-		this.$watch('mapTypeId', () => {
-			if (this.mapTypeId)
-				this.mapObject.setMapTypeId(this.mapTypeId);
-		});
+			this.$el.addEventListener('pointerup', e => {
+				if (e.button !== 1) return;
 
-		// TODO: Update zoom and center on pan/zoom, but they're properties... Need to fire an event
+				clicked.x = null;
+				clicked.y = null;
+			});
 
-		// TODO: Wait for an event?
-		this.ready = true;
-	},
+			this.$el.addEventListener('pointerdown', e => {
+				if (e.button !== 1) return;
+
+				clicked.x = e.pageX;
+				clicked.y = e.pageY;
+			});
+			// }}}
+
+			// TODO: Encapsulate duplication
+			this.$watch('center', () => {
+				if (this.center[0] !== this.mapObject.getCenter().lat() && this.center[1] !== this.mapObject.getCenter().lng())
+					this.mapObject.setCenter({
+						lat: this.center[0],
+						lng: this.center[1],
+					});
+			});
+
+			this.$watch('heading', () => {
+				if (this.heading !== this.mapObject.getHeading())
+					this.mapObject.setHeading(this.heading);
+			});
+
+			this.$watch('tilt', () => {
+				if (this.tilt !== this.mapObject.getTilt())
+					this.mapObject.setTilt(this.tilt);
+			});
+
+			this.$watch('zoom', () => {
+				if (this.zoom !== this.mapObject.getZoom())
+					this.mapObject.setZoom(this.zoom);
+			});
+
+			this.$watch('maxBounds', () => {
+				if (this.maxBounds && this.maxBounds.length === 2 && this.maxBounds[0] && this.maxBounds[0].length === 2 && this.maxBounds[1] && this.maxBounds[1].length === 2)
+					this.mapObject.setOptions({
+						restriction: {
+							latLngBounds: {
+								north: this.maxBounds[0][0],
+								south: this.maxBounds[1][0],
+								west: this.maxBounds[1][1],
+								east: this.maxBounds[0][1],
+							},
+							strictBounds: true,
+						}
+					});
+			});
+
+			this.$watch('mapTypeId', () => {
+				if (this.mapTypeId)
+					this.mapObject.setMapTypeId(this.mapTypeId);
+			});
+
+			// TODO: Update zoom and center on pan/zoom, but they're properties... Need to fire an event
+
+			this.ready = true;
+			this.$emit('loaded');
+		},
+	}
 };
 </script>
 

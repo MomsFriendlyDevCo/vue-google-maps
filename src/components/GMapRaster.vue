@@ -1,5 +1,6 @@
 <script>
 //import { optionsMerger, propsBinder, debounce } from '../utils/utils.js';
+import GoogleMaps from '../mixins/GoogleMaps.js';
 import Options from '../mixins/Options.js';
 //import { CRS, DomEvent, map, latLngBounds, latLng } from 'leaflet';
 
@@ -8,7 +9,7 @@ import Options from '../mixins/Options.js';
  */
 export default {
 	name: 'GMapRaster',
-	mixins: [Options],
+	mixins: [GoogleMaps, Options],
 	provide() { return {
 		map: this,
 	}},
@@ -175,98 +176,91 @@ export default {
 	data() { return {
 		ready: false,
 	}},
-	beforeDestroy() {
-		if (this.mapObject) {
-			google.maps.event.clearInstanceListeners(window);
-			google.maps.event.clearInstanceListeners(document);
-			google.maps.event.clearInstanceListeners(this.$el);
-			this.$el.remove();
-			this.mapObject = null;
-		}
-	},
-	mounted() {
-		const options = _.defaults(_.omit(this.$props, ['center', 'maxBounds']),
-			{
-				//mapTypeId: 'hybrid',
-				//noClear: true,
-				//tilt: 0,
-				//heading: 0,
-				//zoom: 16,
-				// TODO: minZoom, maxZoom
-				disableDefaultUI: true,
-				//gestureHandling: 'none',
-				keyboardShortcuts: false,
-				rotateControl: true,
-				scrollwheel: true,
-				streetViewControl: false,
-				zoomControl: false,
-			}
-		);
+	methods: {
+		initGoogleMaps() {
+			// TODO: "$props.options" should extend/overload these defaults until a provided property overrules it.
+			const options = _.defaults(_.omit(this.$props, ['center', 'maxBounds']),
+				{
+					//mapTypeId: 'hybrid',
+					//noClear: true,
+					//tilt: 0,
+					//heading: 0,
+					//zoom: 16,
+					// TODO: minZoom, maxZoom
+					disableDefaultUI: true,
+					//gestureHandling: 'none',
+					keyboardShortcuts: false,
+					rotateControl: true,
+					scrollwheel: true,
+					streetViewControl: false,
+					zoomControl: false,
+				}
+			);
 
-		if (this.center && this.center.length === 2) 
-			options.center = {
-				lat: this.center[0],
-				lng: this.center[1]
-			};
-
-		if (this.maxBounds && this.maxBounds.length === 2 && this.maxBounds[0] && this.maxBounds[0].length === 2 && this.maxBounds[1] && this.maxBounds[1].length === 2)
-			options.restriction = {
-				latLngBounds: {
-					north: this.maxBounds[0][0],
-					south: this.maxBounds[1][0],
-					west: this.maxBounds[1][1],
-					east: this.maxBounds[0][1],
-				},
-				strictBounds: true,
-			};
-
-		console.log('options', options);
-		this.mapObject = new google.maps.Map(this.$el, options);
-
-		this.mapObject.addListener('center_changed', e => this.$emit('moveend', [this.mapObject.getCenter().lat(), this.mapObject.getCenter().lng()]));
-		this.mapObject.addListener('heading_changed', e => this.$emit('headingend', this.mapObject.getHeading()));
-		this.mapObject.addListener('zoom_changed', e => this.$emit('zoomend', this.mapObject.getZoom()));
-
-		// TODO: Encapsulate duplication
-		this.$watch('center', () => {
-			if (this.center[0] !== this.mapObject.getCenter().lat() && this.center[1] !== this.mapObject.getCenter().lng()) {
-				this.mapObject.setCenter({
+			if (this.center && this.center.length === 2) 
+				options.center = {
 					lat: this.center[0],
-					lng: this.center[1],
-				});
-			}
-		});
+					lng: this.center[1]
+				};
 
-		// TODO: Watch heading also here? Tilt, raster mode has 0/45 switch...
-
-		this.$watch('zoom', () => {
-			if (this.zoom !== this.mapObject.getZoom()) {
-				this.mapObject.setZoom(this.zoom);
-			}
-		});
-
-		this.$watch('maxBounds', () => {
 			if (this.maxBounds && this.maxBounds.length === 2 && this.maxBounds[0] && this.maxBounds[0].length === 2 && this.maxBounds[1] && this.maxBounds[1].length === 2)
-				this.mapObject.setOptions({
-					restriction: {
-						latLngBounds: {
-							north: this.maxBounds[0][0],
-							south: this.maxBounds[1][0],
-							west: this.maxBounds[1][1],
-							east: this.maxBounds[0][1],
-						},
-						strictBounds: true,
-					}
-				});
-		});
+				options.restriction = {
+					latLngBounds: {
+						north: this.maxBounds[0][0],
+						south: this.maxBounds[1][0],
+						west: this.maxBounds[1][1],
+						east: this.maxBounds[0][1],
+					},
+					strictBounds: true,
+				};
 
-		this.$watch('mapTypeId', () => {
-			if (this.mapTypeId)
-				this.mapObject.setMapTypeId(this.mapTypeId);
-		});
+			this.mapObject = new google.maps.Map(this.$el, options);
 
-		// TODO: Wait for an event?
-		this.ready = true;
+			this.mapObject.addListener('center_changed', e => this.$emit('moveend', [this.mapObject.getCenter().lat(), this.mapObject.getCenter().lng()]));
+			this.mapObject.addListener('heading_changed', e => this.$emit('headingend', this.mapObject.getHeading()));
+			this.mapObject.addListener('zoom_changed', e => this.$emit('zoomend', this.mapObject.getZoom()));
+
+			// TODO: Encapsulate duplication
+			this.$watch('center', () => {
+				if (this.center[0] !== this.mapObject.getCenter().lat() && this.center[1] !== this.mapObject.getCenter().lng()) {
+					this.mapObject.setCenter({
+						lat: this.center[0],
+						lng: this.center[1],
+					});
+				}
+			});
+
+			// TODO: Watch heading also here? Tilt, raster mode has 0/45 switch...
+
+			this.$watch('zoom', () => {
+				if (this.zoom !== this.mapObject.getZoom()) {
+					this.mapObject.setZoom(this.zoom);
+				}
+			});
+
+			this.$watch('maxBounds', () => {
+				if (this.maxBounds && this.maxBounds.length === 2 && this.maxBounds[0] && this.maxBounds[0].length === 2 && this.maxBounds[1] && this.maxBounds[1].length === 2)
+					this.mapObject.setOptions({
+						restriction: {
+							latLngBounds: {
+								north: this.maxBounds[0][0],
+								south: this.maxBounds[1][0],
+								west: this.maxBounds[1][1],
+								east: this.maxBounds[0][1],
+							},
+							strictBounds: true,
+						}
+					});
+			});
+
+			this.$watch('mapTypeId', () => {
+				if (this.mapTypeId)
+					this.mapObject.setMapTypeId(this.mapTypeId);
+			});
+
+			this.ready = true;
+			this.$emit('loaded');
+		},
 	},
 };
 </script>
