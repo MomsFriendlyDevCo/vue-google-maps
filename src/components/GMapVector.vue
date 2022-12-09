@@ -185,6 +185,7 @@ export default {
 	}},
 	methods: {
 		initGoogleMaps() {
+			console.log('GMapVector initGoogleMaps');
 			// TODO: "$props.options" should extend/overload these defaults until a provided property overrules it.
 			const options = _.defaults(_.omit(this.$props, ['center', 'maxBounds']),
 				{
@@ -221,8 +222,10 @@ export default {
 					strictBounds: true,
 				};
 
+			console.log('Creating Google Maps Instance', this.$el, options);
 			this.mapObject = new google.maps.Map(this.$el, options);
 
+			// FIXME: These event names are no good if they aren't always at the "end"
 			this.mapObject.addListener('center_changed', e => this.$emit('moveend', [this.mapObject.getCenter().lat(), this.mapObject.getCenter().lng()]));
 			this.mapObject.addListener('heading_changed', e => this.$emit('headingend', this.mapObject.getHeading()));
 			this.mapObject.addListener('tilt_changed', e => this.$emit('tiltend', this.mapObject.getTilt()));
@@ -268,6 +271,7 @@ export default {
 
 			// TODO: Encapsulate duplication
 			this.$watch('center', () => {
+				this.$debug('center', this.center);
 				if (this.center[0] !== this.mapObject.getCenter().lat() && this.center[1] !== this.mapObject.getCenter().lng())
 					this.mapObject.setCenter({
 						lat: this.center[0],
@@ -276,21 +280,25 @@ export default {
 			});
 
 			this.$watch('heading', () => {
+				this.$debug('heading', this.heading);
 				if (this.heading !== this.mapObject.getHeading())
 					this.mapObject.setHeading(this.heading);
 			});
 
 			this.$watch('tilt', () => {
+				this.$debug('tilt', this.tilt);
 				if (this.tilt !== this.mapObject.getTilt())
 					this.mapObject.setTilt(this.tilt);
 			});
 
 			this.$watch('zoom', () => {
+				this.$debug('zoom', this.zoom);
 				if (this.zoom !== this.mapObject.getZoom())
 					this.mapObject.setZoom(this.zoom);
 			});
 
 			this.$watch('maxBounds', () => {
+				this.$debug('maxBounds', this.maxBounds);
 				if (this.maxBounds && this.maxBounds.length === 2 && this.maxBounds[0] && this.maxBounds[0].length === 2 && this.maxBounds[1] && this.maxBounds[1].length === 2)
 					this.mapObject.setOptions({
 						restriction: {
@@ -306,6 +314,7 @@ export default {
 			});
 
 			this.$watch('mapTypeId', () => {
+				this.$debug('mapTypeId', this.mapTypeId);
 				if (this.mapTypeId)
 					this.mapObject.setMapTypeId(this.mapTypeId);
 			});

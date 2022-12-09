@@ -178,6 +178,7 @@ export default {
 	}},
 	methods: {
 		initGoogleMaps() {
+			console.log('GMapRaster initGoogleMaps');
 			// TODO: "$props.options" should extend/overload these defaults until a provided property overrules it.
 			const options = _.defaults(_.omit(this.$props, ['center', 'maxBounds']),
 				{
@@ -214,6 +215,7 @@ export default {
 					strictBounds: true,
 				};
 
+			console.log('Creating Google Maps Instance', this.$el, options);
 			this.mapObject = new google.maps.Map(this.$el, options);
 
 			this.mapObject.addListener('center_changed', e => this.$emit('moveend', [this.mapObject.getCenter().lat(), this.mapObject.getCenter().lng()]));
