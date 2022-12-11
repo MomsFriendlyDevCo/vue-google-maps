@@ -1,6 +1,6 @@
 <script>
 //import { optionsMerger, propsBinder, debounce } from '../utils/utils.js';
-import Polyline from '../mixins/Polyline.js';
+import Poly from '../mixins/Poly.js';
 import Options from '../mixins/Options.js';
 //import { CRS, DomEvent, map, latLngBounds, latLng } from 'leaflet';
 
@@ -9,39 +9,49 @@ import Options from '../mixins/Options.js';
  */
 export default {
 	name: 'GPolyline',
-	mixins: [Polyline, Options],
+	mixins: [Poly, Options],
 	inject: ['map'],
-	props: {
-		latLngs: {
-			type: Array,
-			default: () => [],
-		},
-	},
 	data() { return {
 		ready: false,
 	}},
+	props: {
+		/*
+		smoothFactor: {
+			type: Number,
+			custom: true,
+			default: 1.0
+		},
+		noClip: {
+			type: Boolean,
+			custom: true,
+			default: false
+		}
+		*/
+	},
 	beforeDestroy() {
 		this.mapObject.setMap(null);
 	},
 	mounted() {
+		this.$debug('GPolyline', this.$props);
 		this.mapObject = new google.maps.Polyline({
 			...this.pathOptions,
-			clickable: true,
-			draggable: false,
-			editable: false,
+			clickable: this.clickable,
+			draggable: this.draggable,
+			editable: this.editable,
 			geodesic: false,
 			icons: [],
 			map: this.map.mapObject,
 			path: this.latLngs.map(p => ({ lat: p[0], lng: p[1] })),
-			visible: true,
-			zIndex: 0,
+			visible: this.visible,
+			zIndex: this.zIndex,
 		});
 
-		this.$debug('mapObject', this.mapObject)
+		//this.$watch('clickable', () => this.mapObject.setClickable(this.clickable)); // Method does not exist in Poly
+		this.$watch('draggable', () => this.mapObject.setDraggable(this.draggable));
+		this.$watch('editable', () => this.mapObject.setEditable(this.editable));
+		this.$watch('visible', () => this.mapObject.setVisible(this.visible));
+		//this.$watch('zIndex', () => this.mapObject.setZIndex(this.zIndex)); // Method does not exist in Poly
 
-		//this.mapObject.addListener('click', (e) => this.$emit('click', e));
-
-		// TODO: Wait for an event?
 		this.ready = true;
 	},
 	render: function(h) {

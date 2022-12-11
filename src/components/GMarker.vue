@@ -18,9 +18,12 @@ export default {
 			default: 'markerPane',
 		},
 		*/
+		clickable: {
+			type: Boolean,
+			default: true,
+		},
 		draggable: {
 			type: Boolean,
-			custom: true,
 			default: false,
 		},
 		position: {
@@ -58,13 +61,14 @@ export default {
 			default: 1.0,
 		},
 		*/
-		/*
-		zIndexOffset: {
-			type: Number,
-			custom: false,
-			default: null,
+		visible: {
+			type: Boolean,
+			default: true,
 		},
-		*/
+		zIndex: {
+			type: Number,
+			default: 0,
+		},
 	},
 	data() { return {
 		ready: false,
@@ -73,18 +77,25 @@ export default {
 		this.mapObject.setMap(null);
 	},
 	mounted() {
+		this.$debug('GMarker', this.$props);
 		this.mapObject = new google.maps.Marker({
 			// TODO: Handle array or object
 			position: { lat: this.position[0], lng: this.position[1] },
+			clickable: this.clickable,
 			draggable: this.draggable,
 			label: this.label,
 			icon: this.icon,
 			shape: this.shape,
 			title: this.label?.text || '',
 			map: this.map.mapObject,
+			visible: this.visible,
+			zIndex: this.zIndex,
 		});
 
+		this.$watch('clickable', () => this.mapObject.setClickable(this.clickable));
 		this.$watch('draggable', () => this.mapObject.setDraggable(this.draggable));
+		this.$watch('visible', () => this.mapObject.setVisible(this.visible));
+		this.$watch('zIndex', () => this.mapObject.setZIndex(this.zIndex));
 
 		// TODO: Some kind of binding helper?
 
@@ -103,6 +114,8 @@ export default {
 		*/
 
 		this.mapObject.addListener('dragend', e => {
+			if (!this.draggable) return;
+
 			const evt = {
 				lat: e.latLng.lat(),
 				lng: e.latLng.lng(),
@@ -113,7 +126,11 @@ export default {
 
 		this.mapObject.addListener('mouseover', e => this.$emit('mouseover', e));
 		this.mapObject.addListener('mouseout', e => this.$emit('mouseout', e));
-		this.mapObject.addListener('click', e => this.$emit('click', e));
+		this.mapObject.addListener('click', e => {
+			if (!this.clickable) return;
+
+			this.$emit('click', e);
+		});
 
 		/*
 		[
@@ -135,7 +152,6 @@ export default {
 		});
 		*/
 
-		// TODO: Wait for an event?
 		this.ready = true;
 	},
 	render: function(h) {

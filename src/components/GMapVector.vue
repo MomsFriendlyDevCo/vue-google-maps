@@ -270,6 +270,7 @@ export default {
 			// }}}
 
 			// TODO: Encapsulate duplication
+			// FIXME: Can be triggered for reevaluation in cases where nothing has changed?
 			this.$watch('center', () => {
 				this.$debug('center', this.center);
 				if (this.center[0] !== this.mapObject.getCenter().lat() && this.center[1] !== this.mapObject.getCenter().lng())
