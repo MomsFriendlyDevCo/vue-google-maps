@@ -198,12 +198,7 @@ export default {
 				}
 			);
 
-			if (this.center && this.center.length === 2) 
-				options.center = {
-					lat: this.center[0],
-					lng: this.center[1]
-				};
-
+			// FIXME: Only apply via watcher? These options may overrule later changes?
 			if (this.maxBounds && this.maxBounds.length === 2 && this.maxBounds[0] && this.maxBounds[0].length === 2 && this.maxBounds[1] && this.maxBounds[1].length === 2)
 				options.restriction = {
 					latLngBounds: {
@@ -222,43 +217,9 @@ export default {
 			this.mapObject.addListener('heading_changed', e => this.$emit('headingend', this.mapObject.getHeading()));
 			this.mapObject.addListener('zoom_changed', e => this.$emit('zoomend', this.mapObject.getZoom()));
 
-			// TODO: Encapsulate duplication
-			this.$watch('center', () => {
-				if (this.center[0] !== this.mapObject.getCenter().lat() && this.center[1] !== this.mapObject.getCenter().lng()) {
-					this.mapObject.setCenter({
-						lat: this.center[0],
-						lng: this.center[1],
-					});
-				}
-			});
+			this.initWatchers();
 
-			// TODO: Watch heading also here? Tilt, raster mode has 0/45 switch...
-
-			this.$watch('zoom', () => {
-				if (this.zoom !== this.mapObject.getZoom()) {
-					this.mapObject.setZoom(this.zoom);
-				}
-			});
-
-			this.$watch('maxBounds', () => {
-				if (this.maxBounds && this.maxBounds.length === 2 && this.maxBounds[0] && this.maxBounds[0].length === 2 && this.maxBounds[1] && this.maxBounds[1].length === 2)
-					this.mapObject.setOptions({
-						restriction: {
-							latLngBounds: {
-								north: this.maxBounds[0][0],
-								south: this.maxBounds[1][0],
-								west: this.maxBounds[1][1],
-								east: this.maxBounds[0][1],
-							},
-							strictBounds: true,
-						}
-					});
-			});
-
-			this.$watch('mapTypeId', () => {
-				if (this.mapTypeId)
-					this.mapObject.setMapTypeId(this.mapTypeId);
-			});
+			// TODO: Implement tilt 0/45 switching
 
 			this.ready = true;
 			this.$emit('loaded');
