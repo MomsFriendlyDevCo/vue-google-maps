@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/MomsFriendlyDevCo/vue-google-maps#readme",
   "dependencies": {
+    "@doop/debug": "^1.0.5",
     "lodash": "^4.17.21"
   },
   "devDependencies": {

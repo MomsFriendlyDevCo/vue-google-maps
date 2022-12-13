@@ -4,9 +4,8 @@ import GoogleMaps from '../mixins/GoogleMaps.js';
 import Options from '../mixins/Options.js';
 //import { CRS, DomEvent, map, latLngBounds, latLng } from 'leaflet';
 
-import Debug from '@doop/debug';
-
-const $debug = Debug('vue-google-maps/GMapRaster').enable(false);
+//import Debug from '@doop/debug';
+//const $debug = Debug('vue-google-maps/GMapRaster').enable(false);
 
 /**
  * Map component
