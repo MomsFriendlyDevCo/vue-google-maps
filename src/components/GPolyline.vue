@@ -4,8 +4,11 @@ import Poly from '../mixins/Poly.js';
 import Options from '../mixins/Options.js';
 //import { CRS, DomEvent, map, latLngBounds, latLng } from 'leaflet';
 
+//import Debug from '@doop/debug';
+//const $debug = Debug('vue-google-maps/GPolyline').enable(false);
+
 /**
- * Marker component
+ * Polyline component
  */
 export default {
 	name: 'GPolyline',
@@ -32,7 +35,6 @@ export default {
 		this.mapObject.setMap(null);
 	},
 	mounted() {
-		this.$debug('GPolyline', this.$props);
 		this.mapObject = new google.maps.Polyline({
 			...this.pathOptions,
 			clickable: this.clickable,

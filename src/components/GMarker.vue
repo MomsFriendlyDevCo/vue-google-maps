@@ -4,6 +4,9 @@
 import Options from '../mixins/Options.js';
 //import { CRS, DomEvent, map, latLngBounds, latLng } from 'leaflet';
 
+//import Debug from '@doop/debug';
+//const $debug = Debug('vue-google-maps/GMarker').enable(false);
+
 /**
  * Marker component
  */
@@ -77,7 +80,6 @@ export default {
 		this.mapObject.setMap(null);
 	},
 	mounted() {
-		this.$debug('GMarker', this.$props);
 		this.mapObject = new google.maps.Marker({
 			// TODO: Handle array or object
 			position: { lat: this.position[0], lng: this.position[1] },

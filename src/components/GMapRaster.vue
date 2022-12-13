@@ -4,6 +4,10 @@ import GoogleMaps from '../mixins/GoogleMaps.js';
 import Options from '../mixins/Options.js';
 //import { CRS, DomEvent, map, latLngBounds, latLng } from 'leaflet';
 
+import Debug from '@doop/debug';
+
+const $debug = Debug('vue-google-maps/GMapRaster').enable(false);
+
 /**
  * Map component
  */
@@ -178,7 +182,6 @@ export default {
 	}},
 	methods: {
 		initGoogleMaps() {
-			console.log('GMapRaster initGoogleMaps');
 			// TODO: "$props.options" should extend/overload these defaults until a provided property overrules it.
 			const options = _.defaults(_.omit(this.$props, ['center', 'maxBounds']),
 				{

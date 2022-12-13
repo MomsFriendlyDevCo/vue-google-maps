@@ -10,7 +10,6 @@ export default {
 	methods: {
 		initWatchers() {
 			this.$watch('center', () => {
-				this.$debug('center', this.center);
 				if (_.isArray(this.center)) {
 					if (_.isFunction(this.mapObject.getCenter) && _.isObject(this.mapObject.getCenter())) {
 						if (this.center[0] !== this.mapObject.getCenter().lat() && this.center[1] !== this.mapObject.getCenter().lng())
@@ -37,19 +36,16 @@ export default {
 			}, { immediate: true });
 
 			this.$watch('heading', () => {
-				this.$debug('heading', this.heading);
 				if (this.heading !== this.mapObject.getHeading())
 					this.mapObject.setHeading(this.heading);
 			}, { immediate: true });
 
 			this.$watch('zoom', () => {
-				this.$debug('zoom', this.zoom);
 				if (this.zoom !== this.mapObject.getZoom())
 					this.mapObject.setZoom(this.zoom);
 			}, { immediate: true });
 
 			this.$watch('maxBounds', () => {
-				this.$debug('maxBounds', this.maxBounds);
 				if (this.maxBounds && this.maxBounds.length === 2 && this.maxBounds[0] && this.maxBounds[0].length === 2 && this.maxBounds[1] && this.maxBounds[1].length === 2)
 					this.mapObject.setOptions({
 						restriction: {
@@ -65,7 +61,6 @@ export default {
 			}, { immediate: true });
 
 			this.$watch('mapTypeId', () => {
-				this.$debug('mapTypeId', this.mapTypeId);
 				if (this.mapTypeId)
 					this.mapObject.setMapTypeId(this.mapTypeId);
 			}, { immediate: true });

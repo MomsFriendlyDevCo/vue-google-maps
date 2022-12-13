@@ -4,6 +4,9 @@
 import Options from '../mixins/Options.js';
 //import { CRS, DomEvent, map, latLngBounds, latLng } from 'leaflet';
 
+//import Debug from '@doop/debug';
+//const $debug = Debug('vue-google-maps/GInfoWindow').enable(false);
+
 /**
  * InfoWindow dialog component
  */

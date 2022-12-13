@@ -4,8 +4,11 @@
 import Options from '../mixins/Options.js';
 //import { CRS, DomEvent, map, latLngBounds, latLng } from 'leaflet';
 
+//import Debug from '@doop/debug';
+//const $debug = Debug('vue-google-maps/GCustomPopup').enable(false);
+
 /**
- * Marker component
+ * OverlayView dialog component
  */
 export default {
 	name: 'GCustomPopup',

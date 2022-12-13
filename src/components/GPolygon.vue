@@ -4,8 +4,11 @@ import Poly from '../mixins/Poly.js';
 import Options from '../mixins/Options.js';
 //import { CRS, DomEvent, map, latLngBounds, latLng } from 'leaflet';
 
+//import Debug from '@doop/debug';
+//const $debug = Debug('vue-google-maps/GPolygon').enable(false);
+
 /**
- * Marker component
+ * Polygon component
  */
 export default {
 	name: 'GPolygon',
@@ -40,7 +43,6 @@ export default {
 		this.mapObject.setMap(null);
 	},
 	mounted() {
-		this.$debug('GPolygon', this.$props);
 		this.mapObject = new google.maps.Polygon({
 			...this.pathOptions,
 			fillColor: this.fillColor,
