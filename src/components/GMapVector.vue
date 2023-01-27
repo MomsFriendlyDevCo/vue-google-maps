@@ -172,15 +172,14 @@ export default {
 		},
 		*/
 
-		// TODO: mapTypeId
-
 		mapTypeId: {
 			type: String,
 			default: 'roadmap',
 		},
-		mapId: {
-			type: String,
-			default: '15431d2b469f209e', // This is a pre-defined vector map with tilt/heading enabled.
+
+		options: {
+			type: Object,
+			default: null,
 		},
 	},
 	data() { return {
@@ -188,8 +187,14 @@ export default {
 	}},
 	methods: {
 		initGoogleMaps() {
-			// TODO: "$props.options" should extend/overload these defaults until a provided property overrules it.
-			const options = _.defaults(_.omit(this.$props, ['center', 'maxBounds']),
+			this.$debug('initGoogleMaps', this.$props.options);
+
+			const options = {};
+
+			_.defaults(
+				options,
+				_.omit(this.$props, ['center', 'maxBounds', 'options']),
+				this.$props.options,
 				{
 					//mapTypeId: 'hybrid',
 					//noClear: true,
@@ -278,7 +283,7 @@ export default {
 			this.ready = true;
 			this.$emit('loaded');
 		},
-	}
+	},
 };
 </script>
 

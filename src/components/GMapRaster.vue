@@ -171,9 +171,10 @@ export default {
 			type: String,
 			default: 'hybrid',
 		},
-		mapId: {
-			type: String,
-			default: undefined,
+
+		options: {
+			type: Object,
+			default: null,
 		},
 	},
 	data() { return {
@@ -181,8 +182,14 @@ export default {
 	}},
 	methods: {
 		initGoogleMaps() {
-			// TODO: "$props.options" should extend/overload these defaults until a provided property overrules it.
-			const options = _.defaults(_.omit(this.$props, ['center', 'maxBounds']),
+			this.$debug('initGoogleMaps', this.$props.options);
+
+			const options = {};
+
+			_.defaults(
+				options,
+				_.omit(this.$props, ['center', 'maxBounds', 'options']),
+				this.$props.options,
 				{
 					//mapTypeId: 'hybrid',
 					//noClear: true,
