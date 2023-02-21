@@ -94,6 +94,7 @@ export default {
 			zIndex: this.zIndex,
 		});
 
+		this.$watch('position', () => this.mapObject.setPosition({ lat: this.position[0], lng: this.position[1] }));
 		this.$watch('clickable', () => this.mapObject.setClickable(this.clickable));
 		this.$watch('draggable', () => this.mapObject.setDraggable(this.draggable));
 		this.$watch('visible', () => this.mapObject.setVisible(this.visible));
