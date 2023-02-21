@@ -19,22 +19,39 @@ export default {
 	data() { return {
 		ready: false,
 	}},
+	props: {
+		openOn: {
+			type: String,
+			default: 'mouseover',
+		},
+		closeOn: {
+			type: String,
+			default: 'mouseout',
+		},
+	},
 	mounted() {
-		// TODO: The rest... Attach to a marker's events
 		this.mapObject = new google.maps.InfoWindow({
-			content: '' // TODO: slot default content
+			content: this.$slots.default[0]?.elm?.outerHTML,
 		});
 
 		this.mapObject.setMap(this.map.mapObject);
 
-		// TODO: Wait for an event?
-		this.ready = true;
+		this.$parent.mapObject.addListener(this.openOn, () => {
+			this.mapObject.open({
+				anchor: this.$parent.mapObject,
+				//map: this.map.mapObject,
+			});
+		});
+
+		this.$parent.mapObject.addListener(this.closeOn, () => {
+			this.mapObject.close();
+		});
 	},
 };
 </script>
 
 <template>
 	<div class="google-map-info-window">
-		<slot v-if="ready" />
+		<slot/>
 	</div>
 </template>
