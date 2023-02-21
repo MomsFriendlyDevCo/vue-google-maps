@@ -1,6 +1,6 @@
 {
   "name": "@momsfriendlydevco/vue-google-maps",
-  "version": "0.0.34",
+  "version": "0.0.35",
   "description": "Google Maps components for Vue",
   "main": "dist/main.js",
   "scripts": {
