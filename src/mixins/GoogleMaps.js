@@ -18,6 +18,7 @@ export default {
 								lng: this.center[1],
 							});
 					} else {
+						// FIXME: Not testing if it's the same?
 						this.mapObject.setCenter({
 							lat: this.center[0],
 							lng: this.center[1],
@@ -28,6 +29,7 @@ export default {
 						if (this.center?.lat !== this.mapObject.getCenter().lat() && this.center?.lng !== this.mapObject.getCenter().lng())
 							this.mapObject.setCenter(this.center);
 					} else {
+						// FIXME: Not testing if it's the same?
 						this.mapObject.setCenter(this.center);
 					}
 				} else {
