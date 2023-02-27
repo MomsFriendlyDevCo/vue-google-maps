@@ -6,6 +6,13 @@ export default {
 		apiKey: {
 			type: String,
 		},
+		/**
+		 * Libraries to load
+		 */
+		libraries: {
+			type: String,
+			default: 'places',
+		},
 	},
 	methods: {
 		initWatchers() {
@@ -78,12 +85,24 @@ export default {
 		}
 	},
 	mounted() {
-		if (typeof google === 'undefined') {
-			window.initGoogleMaps = this.initGoogleMaps; // Globally accessible callback for Google
+		if (_.isUndefined(window?.google)) {
+			// Globally accessible callback for Google
+			if (_.isFunction(window?.initGoogleMaps)) { // Another exists, wrap it
+				const origCallback = window.initGoogleMaps;
+				window.initGoogleMaps = () => {
+					origCallback();
+					this.initGoogleMaps();
+				};
+			} else {
+				window.initGoogleMaps = this.initGoogleMaps;
+			}
+
 			const script = document.createElement('script');
 			//script.async = true; // NOTE: Fires callback with or without...
 			script.type = 'text/javascript';
-			script.src = 'https://maps.googleapis.com/maps/api/js?v=beta&callback=initGoogleMaps';
+			// TODO: Property to specifiy which libraries we're interested in loading
+			script.src = 'https://maps.googleapis.com/maps/api/js?v=beta=places&callback=initGoogleMaps';
+			if (this.$props.libraries) script.src += `&libraries=${this.$props.libraries}`;
 			if (this.$props.apiKey) script.src += `&key=${this.$props.apiKey}`;
 			document.body.appendChild(script);
 		} else {
