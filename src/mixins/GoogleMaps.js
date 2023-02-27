@@ -90,8 +90,8 @@ export default {
 			if (_.isFunction(window?.initGoogleMaps)) { // Another exists, wrap it
 				const origCallback = window.initGoogleMaps;
 				window.initGoogleMaps = () => {
-					origCallback();
 					this.initGoogleMaps();
+					origCallback();
 				};
 			} else {
 				window.initGoogleMaps = this.initGoogleMaps;
