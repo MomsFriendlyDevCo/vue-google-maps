@@ -18,6 +18,14 @@ export default {
 		ready: false,
 	}},
 	props: {
+		clickable: {
+			type: Boolean,
+			default: true,
+		},
+		draggable: {
+			type: Boolean,
+			default: false,
+		},
 		fillColor: {
 			type: String,
 			default: "#ff3300"
@@ -45,6 +53,8 @@ export default {
 	mounted() {
 		this.mapObject = new google.maps.Polygon({
 			...this.pathOptions,
+			clickable: this.clickable,
+			draggable: this.draggable,
 			fillColor: this.fillColor,
 			fillOpacity: this.fillOpacity,
 			clickable: this.clickable,
@@ -58,7 +68,7 @@ export default {
 			zIndex: this.zIndex,
 		});
 
-		//this.$watch('clickable', () => this.mapObject.setClickable(this.clickable)); // Method does not exist in Poly
+		this.$watch('clickable', () => this.mapObject.setClickable(this.clickable)); // Method does not exist in Poly?
 		this.$watch('draggable', () => this.mapObject.setDraggable(this.draggable));
 		this.$watch('editable', () => this.mapObject.setEditable(this.editable));
 		this.$watch('visible', () => this.mapObject.setVisible(this.visible));

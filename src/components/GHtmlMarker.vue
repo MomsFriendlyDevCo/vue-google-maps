@@ -15,11 +15,6 @@ export default {
 	mixins: [Options],
 	inject: ['map'],
 	props: {
-		position: {
-			type: [Object, Array],
-			custom: true,
-			default: null,
-		},
 		clickable: {
 			type: Boolean,
 			default: true,
@@ -27,6 +22,11 @@ export default {
 		draggable: {
 			type: Boolean,
 			default: false,
+		},
+		position: {
+			type: [Object, Array],
+			custom: true,
+			default: null,
 		},
 		pane: {
 			type: String,
@@ -39,14 +39,16 @@ export default {
 	mounted() {
 		class HtmlMarker extends google.maps.OverlayView {
 			position;
+			clickable;
 			draggable;
 			pane;
 			content;
 			containerDiv;
 
-			constructor(position, draggable, pane, content) {
+			constructor(position, clickable, draggable, pane, content) {
 				super();
 				this.position = position;
+				this.clickable = clickable;
 				this.draggable = draggable;
 				this.pane = pane;
 				this.content = content;
@@ -94,7 +96,7 @@ export default {
 				panes[this.pane].appendChild(this.containerDiv);
 			}
 
-			attachEvents() {
+			attachDragEvents() {
 				if (!this.draggable) {
 					google.maps.event.removeListener(this.handleDragLeave);
 					google.maps.event.removeListener(this.handleDragDown);
@@ -182,7 +184,7 @@ export default {
 
 			onAdd() {
 				this.appendDivToPane();
-				this.attachEvents();
+				this.attachDragEvents();
 			}
 
 			onRemove() {
@@ -205,13 +207,22 @@ export default {
 				return this.position;
 			}
 
+			getClickable() {
+				return this.clickable;
+			}
+
+			setClickable(clickable) {
+				this.clickable = clickable;
+				// TODO: Emit clickable_changed
+			}
+
 			getDraggable() {
 				return this.draggable;
 			}
 
 			setDraggable(draggable) {
 				this.draggable = draggable;
-				this.attachEvents();
+				this.attachDragEvents();
 				// TODO: Emit draggable_changed
 			}
 		};
@@ -220,12 +231,14 @@ export default {
 			// FIXME: Accept array or object...
 			//_.isObject(this.position) ? this.position : google.maps.LatLng(...this.position),
 			new google.maps.LatLng(...this.position),
+			this.clickable,
 			this.draggable,
 			this.pane,
 			this.$el
 		);
 		this.mapObject.setMap(this.map.mapObject);
 
+		this.$watch('clickable', () => this.mapObject.setClickable(this.clickable));
 		this.$watch('draggable', () => this.mapObject.setDraggable(this.draggable));
 
 		// TODO: Any other events?
@@ -251,7 +264,7 @@ export default {
 </script>
 
 <template>
-	<div class="google-map-html-marker">
+	<div class="google-map-html-marker" style="`pointer-events: ${(clickable) ? 'initial' : 'none'}`">
 		<slot v-if="ready" />
 	</div>
 </template>

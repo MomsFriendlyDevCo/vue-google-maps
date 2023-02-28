@@ -18,6 +18,14 @@ export default {
 		ready: false,
 	}},
 	props: {
+		clickable: {
+			type: Boolean,
+			default: true,
+		},
+		draggable: {
+			type: Boolean,
+			default: false,
+		},
 		/*
 		smoothFactor: {
 			type: Number,
@@ -48,7 +56,7 @@ export default {
 			zIndex: this.zIndex,
 		});
 
-		//this.$watch('clickable', () => this.mapObject.setClickable(this.clickable)); // Method does not exist in Poly
+		this.$watch('clickable', () => this.mapObject.setClickable(this.clickable)); // Method does not exist in Poly?
 		this.$watch('draggable', () => this.mapObject.setDraggable(this.draggable));
 		this.$watch('editable', () => this.mapObject.setEditable(this.editable));
 		this.$watch('visible', () => this.mapObject.setVisible(this.visible));
