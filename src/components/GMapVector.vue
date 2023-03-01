@@ -191,7 +191,7 @@ export default {
 
 			const options = {};
 
-			_.defaults(
+			_.merge(
 				options,
 				_.omit(this.$props, ['center', 'maxBounds', 'options']),
 				this.$props.options,

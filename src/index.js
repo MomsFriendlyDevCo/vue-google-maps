@@ -12,3 +12,5 @@ export { default as GCustomPopup } from './components/GCustomPopup';
 export { default as GHtmlMarker } from './components/GHtmlMarker';
 export { default as GInfoWindow } from './components/GInfoWindow';
 export { default as GCrosshair } from './components/GCrosshair';
+
+export { default as GTileLayer } from './components/GTileLayer';
