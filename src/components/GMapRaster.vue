@@ -165,8 +165,6 @@ export default {
 		},
 		*/
 
-		// TODO: mapTypeId
-
 		mapTypeId: {
 			type: String,
 			default: 'hybrid',
@@ -186,6 +184,8 @@ export default {
 
 			const options = {};
 
+			// FIXME: Source objects are applied from left to right. Subsequent sources overwrite property assignments of previous sources.
+			// FIXME: "_.defaults" will work but only if "this.$props.options.mapTypeId" overrides "this.$props.mapTypeId"
 			_.merge(
 				options,
 				_.omit(this.$props, ['center', 'maxBounds', 'options']),
