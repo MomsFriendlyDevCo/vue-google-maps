@@ -174,7 +174,6 @@ export default {
 
 		mapTypeId: {
 			type: String,
-			default: 'roadmap',
 		},
 
 		options: {
@@ -191,9 +190,7 @@ export default {
 
 			const options = {};
 
-			// FIXME: Source objects are applied from left to right. Subsequent sources overwrite property assignments of previous sources.
-			// FIXME: "_.defaults" will work but only if "this.$props.options.mapTypeId" overrides "this.$props.mapTypeId"
-			_.merge(
+			_.defaults(
 				options,
 				_.omit(this.$props, ['center', 'maxBounds', 'options']),
 				this.$props.options,
@@ -213,6 +210,8 @@ export default {
 					zoomControl: false,
 				}
 			);
+
+			if (!options.mapTypeId) options.mapTypeId = 'hybrid'; // Setting a default here so "$props.options" and "$props" simply default
 
 			// FIXME: Only apply via watcher? These options may overrule later changes?
 			if (this.maxBounds && this.maxBounds.length === 2 && this.maxBounds[0] && this.maxBounds[0].length === 2 && this.maxBounds[1] && this.maxBounds[1].length === 2)
