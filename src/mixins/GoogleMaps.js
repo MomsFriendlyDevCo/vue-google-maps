@@ -20,29 +20,37 @@ export default {
 				if (_.isArray(this.center)) {
 					if (_.isFunction(this.mapObject.getCenter) && _.isObject(this.mapObject.getCenter())) {
 						if (this.center[0] !== this.mapObject.getCenter().lat() && this.center[1] !== this.mapObject.getCenter().lng())
-							this.mapObject.panTo({
-								lat: this.center[0],
-								lng: this.center[1],
-							});
+							this.smoothPanTo(
+								{
+									lat: this.center[0],
+									lng: this.center[1],
+								}
+							);
 					} else {
 						// FIXME: Not testing if it's the same?
-						this.mapObject.panTo({
-							lat: this.center[0],
-							lng: this.center[1],
-						});
+						this.smoothPanTo(
+							{
+								lat: this.center[0],
+								lng: this.center[1],
+							}
+						);
 					}
 				} else if (_.isObject(this.center) && _.has(this.center, 'lat') && _.has(this.center, 'lng')) {
 					if (_.isFunction(this.mapObject.getCenter) && _.isObject(this.mapObject.getCenter())) {
 						if (this.center?.lat !== this.mapObject.getCenter().lat() && this.center?.lng !== this.mapObject.getCenter().lng())
-							this.mapObject.panTo(this.center);
+							this.smoothPanTo(
+								this.center,
+							);
 					} else {
 						// FIXME: Not testing if it's the same?
-						this.mapObject.panTo(this.center);
+						this.smoothPanTo(
+							this.center,
+						);
 					}
 				} else {
 					console.warn('Invalid "center" provided', JSON.stringify(this.center, null, 2));
 				}
-			}, { immediate: true });
+			}, { immediate: true, }); // TODO: deep?
 
 			this.$watch('heading', () => {
 				if (this.heading !== this.mapObject.getHeading())
@@ -50,8 +58,15 @@ export default {
 			}, { immediate: true });
 
 			this.$watch('zoom', () => {
-				if (this.zoom !== this.mapObject.getZoom())
-					this.mapObject.setZoom(this.zoom);
+				if (this.isPanning) { // Must wait for panning to complete
+					// FIXME: Some potential fragility here in that we're relying on this "zoom_changed" not being the first zoom out event
+					google.maps.event.addListenerOnce(this.mapObject, 'zoom_changed', () => this.smoothZoom(this.zoom));
+				} else if (this.zoom !== this.mapObject.getZoom()) {
+					// TODO: Waiting for idle a good idea?
+					//google.maps.event.addListenerOnce(this.mapObject, 'idle', () => {
+						this.smoothZoom(this.zoom);
+					//});
+				}
 			}, { immediate: true });
 
 			this.$watch('maxBounds', () => {

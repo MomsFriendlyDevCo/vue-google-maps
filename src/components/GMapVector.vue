@@ -2,6 +2,7 @@
 //import { optionsMerger, propsBinder, debounce } from '../utils/utils.js';
 import GoogleMaps from '../mixins/GoogleMaps.js';
 import Options from '../mixins/Options.js';
+import SmoothMotion from '../mixins/SmoothMotion.js';
 //import { CRS, DomEvent, map, latLngBounds, latLng } from 'leaflet';
 
 //import Debug from '@doop/debug';
@@ -12,7 +13,7 @@ import Options from '../mixins/Options.js';
  */
 export default {
 	name: 'GMapVector',
-	mixins: [GoogleMaps, Options],
+	mixins: [GoogleMaps, Options, SmoothMotion],
 	provide() { return {
 		map: this,
 	}},
@@ -229,11 +230,19 @@ export default {
 			this.mapObject = new google.maps.Map(this.$el, options);
 
 			this.mapObject.addListener('click', e => this.$emit('click', [e.latLng.lat(), e.latLng.lng()]));
-			// FIXME: These event names are no good if they aren't always at the "end"
-			this.mapObject.addListener('center_changed', e => this.$emit('moveend', [this.mapObject.getCenter().lat(), this.mapObject.getCenter().lng()]));
 			this.mapObject.addListener('heading_changed', e => this.$emit('headingend', this.mapObject.getHeading()));
 			this.mapObject.addListener('tilt_changed', e => this.$emit('tiltend', this.mapObject.getTilt()));
-			this.mapObject.addListener('zoom_changed', e => this.$emit('zoomend', this.mapObject.getZoom()));
+
+			this.mapObject.addListener('center_changed', e => {
+				if (this.isPanning) return;
+
+				this.$emit('moveend', [this.mapObject.getCenter().lat(), this.mapObject.getCenter().lng()]);
+			});
+			this.mapObject.addListener('zoom_changed', e => {
+				if (this.isZooming) return;
+
+				this.$emit('zoomend', this.mapObject.getZoom());
+			});
 
 			// Track middle-mouse for heading/tilt {{{
 			// FIXME: Fails until first pan or zoom? Does it?
