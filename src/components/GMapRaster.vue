@@ -226,12 +226,12 @@ export default {
 			this.mapObject.addListener('heading_changed', e => this.$emit('headingend', this.mapObject.getHeading()));
 
 			this.mapObject.addListener('center_changed', e => {
-				if (this.isPanning) return;
+				if (this.pendingSmooth) return;
 
 				this.$emit('moveend', [this.mapObject.getCenter().lat(), this.mapObject.getCenter().lng()]);
 			});
 			this.mapObject.addListener('zoom_changed', e => {
-				if (this.isZooming) return;
+				if (this.pendingSmooth) return;
 
 				this.$emit('zoomend', this.mapObject.getZoom());
 			});

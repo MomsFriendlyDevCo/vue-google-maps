@@ -63,7 +63,6 @@ export default {
 		zoom: {
 			type: Number,
 			custom: true,
-			default: 16,
 		},
 		/**
 		 * The minZoom of the map
@@ -234,12 +233,14 @@ export default {
 			this.mapObject.addListener('tilt_changed', e => this.$emit('tiltend', this.mapObject.getTilt()));
 
 			this.mapObject.addListener('center_changed', e => {
-				if (this.isPanning) return;
+				if (this.pendingSmooth) return;
 
 				this.$emit('moveend', [this.mapObject.getCenter().lat(), this.mapObject.getCenter().lng()]);
 			});
+
+			// FIXME: Set zoom before bounds?
 			this.mapObject.addListener('zoom_changed', e => {
-				if (this.isZooming) return;
+				if (this.pendingSmooth) return;
 
 				this.$emit('zoomend', this.mapObject.getZoom());
 			});

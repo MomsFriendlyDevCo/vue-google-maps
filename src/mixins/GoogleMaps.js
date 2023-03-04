@@ -17,6 +17,7 @@ export default {
 	methods: {
 		initWatchers() {
 			this.$watch('center', () => {
+				// NOTE: All of this is simply so that the API supports same objects as LeafletJS. Can likely be removed.
 				if (_.isArray(this.center)) {
 					if (_.isFunction(this.mapObject.getCenter) && _.isObject(this.mapObject.getCenter())) {
 						if (this.center[0] !== this.mapObject.getCenter().lat() && this.center[1] !== this.mapObject.getCenter().lng())
@@ -58,15 +59,7 @@ export default {
 			}, { immediate: true });
 
 			this.$watch('zoom', () => {
-				if (this.isPanning) { // Must wait for panning to complete
-					// FIXME: Some potential fragility here in that we're relying on this "zoom_changed" not being the first zoom out event
-					google.maps.event.addListenerOnce(this.mapObject, 'zoom_changed', () => this.smoothZoom(this.zoom));
-				} else if (this.zoom !== this.mapObject.getZoom()) {
-					// TODO: Waiting for idle a good idea?
-					//google.maps.event.addListenerOnce(this.mapObject, 'idle', () => {
-						this.smoothZoom(this.zoom);
-					//});
-				}
+				this.smoothZoom(this.zoom);
 			}, { immediate: true });
 
 			this.$watch('maxBounds', () => {
