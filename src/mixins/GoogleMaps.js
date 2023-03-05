@@ -37,14 +37,14 @@ export default {
 		},
 
 		initWatchers() {
-			this.$watch('center', () => {
-				this.smoothPanTo(this.convertLatLng(this.center));
-			}, { immediate: true, }); // TODO: deep?
-
 			this.$watch('heading', () => {
 				if (this.heading !== this.mapObject.getHeading())
 					this.mapObject.setHeading(this.heading);
 			}, { immediate: true });
+
+			this.$watch('center', () => {
+				this.smoothPanTo(this.convertLatLng(this.center));
+			}, { immediate: true, }); // TODO: deep?
 
 			this.$watch('zoom', () => {
 				this.smoothZoom(this.zoom, this.convertLatLng(this.center));
