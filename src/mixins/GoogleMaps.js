@@ -15,42 +15,30 @@ export default {
 		},
 	},
 	methods: {
+		/**
+		 * Convert latLng provided as array into object when required
+		 * 
+		 * @param {Array|Object} latLng Destination position
+		 * @returns {Object}
+		 */
+		convertLatLng(latLng) {
+			// NOTE: All of this is simply so that the API supports same objects as LeafletJS. Can likely be removed.
+			if (_.isArray(latLng)) {
+				return {
+					lat: latLng[0],
+					lng: latLng[1],
+				};
+			} else if (_.isObject(latLng) && _.has(latLng, 'lat') && _.has(latLng, 'lng')) {
+				return latLng;
+			} else {
+				console.warn('Invalid "latLng" provided', JSON.stringify(latLng, null, 2));
+				return latLng;
+			}
+		},
+
 		initWatchers() {
 			this.$watch('center', () => {
-				// NOTE: All of this is simply so that the API supports same objects as LeafletJS. Can likely be removed.
-				if (_.isArray(this.center)) {
-					if (_.isFunction(this.mapObject.getCenter) && _.isObject(this.mapObject.getCenter())) {
-						if (this.center[0] !== this.mapObject.getCenter().lat() && this.center[1] !== this.mapObject.getCenter().lng())
-							this.smoothPanTo(
-								{
-									lat: this.center[0],
-									lng: this.center[1],
-								}
-							);
-					} else {
-						// FIXME: Not testing if it's the same?
-						this.smoothPanTo(
-							{
-								lat: this.center[0],
-								lng: this.center[1],
-							}
-						);
-					}
-				} else if (_.isObject(this.center) && _.has(this.center, 'lat') && _.has(this.center, 'lng')) {
-					if (_.isFunction(this.mapObject.getCenter) && _.isObject(this.mapObject.getCenter())) {
-						if (this.center?.lat !== this.mapObject.getCenter().lat() && this.center?.lng !== this.mapObject.getCenter().lng())
-							this.smoothPanTo(
-								this.center,
-							);
-					} else {
-						// FIXME: Not testing if it's the same?
-						this.smoothPanTo(
-							this.center,
-						);
-					}
-				} else {
-					console.warn('Invalid "center" provided', JSON.stringify(this.center, null, 2));
-				}
+				this.smoothPanTo(this.convertLatLng(this.center));
 			}, { immediate: true, }); // TODO: deep?
 
 			this.$watch('heading', () => {
@@ -59,7 +47,7 @@ export default {
 			}, { immediate: true });
 
 			this.$watch('zoom', () => {
-				this.smoothZoom(this.zoom);
+				this.smoothZoom(this.zoom, this.convertLatLng(this.center));
 			}, { immediate: true });
 
 			this.$watch('maxBounds', () => {

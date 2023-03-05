@@ -10,16 +10,15 @@ export default {
 		 * @returns {Promise}
 		 */
 		doPan(destLatLng) {
-			console.log('doPan', destLatLng);
+			//console.log('doPan', destLatLng);
 
 			// Check if we're yet to be centered
 			if (_.isFunction(this.mapObject.getCenter) && !_.isEmpty(this.mapObject.getCenter())) {
-				// Check if we're already there
-				if (this.mapObject.getCenter().equals(new google.maps.LatLng(destLatLng)))
+				if (this.mapObject.getCenter().equals(new google.maps.LatLng(destLatLng))) // Check if we're already there
 					return Promise.resolve();
 			} else {
+				// TODO: Wait for idle again before resolve?
 				this.mapObject.setCenter(destLatLng);
-				//console.log('setCenter', destLatLng)
 				return Promise.resolve();
 			}
 
@@ -28,7 +27,7 @@ export default {
 				listener = google.maps.event.addListener(this.mapObject, 'idle', () => {
 					// Validate reached destination?
 					/*
-					// FIXME: This is disjointed, better to figure out where the problem originates and fix starting conditions
+					// FIXME: This is disjointed; Validation is, valid however any adjustments made as this time will be clunky.
 					const precision = 9; // Close enough is good enough
 					if (
 						_.round(destLatLng.lat, precision) === _.round(this.mapObject.getCenter().lat(), precision) &&
@@ -37,11 +36,12 @@ export default {
 						resolve();
 					} else {
 						console.log('doPan.again', destLatLng, [this.mapObject.getCenter().lat(), this.mapObject.getCenter().lng()]);
-						this.mapObject.setZoom(this.mapObject.getZoom() + 0.01); // FIXME: Not understanding why "panTo" fails to reach position until after a touch on zoom
+						//this.mapObject.setZoom(this.mapObject.getZoom() + 0.01); // NOTE: Hack to get within "maxBounds"
 						this.mapObject.panTo(destLatLng);
 					}
 					*/
 					if (listener) google.maps.event.removeListener(listener);
+					//console.log('doPan.resolve');
 					resolve();
 				});
 				this.mapObject.panTo(destLatLng);
@@ -53,7 +53,7 @@ export default {
 		 * 
 		 * @see https://stackoverflow.com/a/52763732/2438830
 		 * 
-		 * @param {Array} destLatLng Destination latLng
+		 * @param {Object} destLatLng Destination latLng
 		 * @returns {Promise}
 		 */
 		smoothPanTo(destLatLng) {
@@ -98,7 +98,7 @@ export default {
 			 * at optionalZoomLevel.
 			 **/
 			const willAnimatePanTo = (destLatLng, optionalZoomLevel) => {
-				if (this.mapObject.getBounds() === null) return true;
+				if (this.mapObject.getBounds() === null) return true; // FIXME: Does no bounds really mean always true?
 
 				var dimen = getMapDimenInPixels()
 
@@ -135,7 +135,7 @@ export default {
 				} else {
 					return currentZoom - 3
 				}
-			}
+			};
 
 			/**
 			 * Given a map and a destLatLng, smoothly animates the map center to
@@ -154,14 +154,16 @@ export default {
 					const zoomIn = () => {
 						//console.log('zoomIn', this.mapObject.getZoom(), initialZoom);
 						if(this.mapObject.getZoom() < initialZoom) {
-							//console.log('setZoom', Math.min(this.mapObject.getZoom() + 3, initialZoom));
 							this.mapObject.setZoom(Math.min(this.mapObject.getZoom() + 3, initialZoom));
+							// Re-center on "destLatLng" at each step to correctly handle bounds
+							if (!this.mapObject.getCenter().equals(new google.maps.LatLng(destLatLng))) this.mapObject.panTo(destLatLng);
 						} else {
 							if (listener) google.maps.event.removeListener(listener);
 	
 							// TODO: Remove any special options
 							//this.mapObject.setOptions({draggable: true, zoomControl: true, scrollwheel: true, disableDoubleClickZoom: false})
 	
+							//console.log('smoothPanToWorkAround.resolve');
 							resolve();
 						}
 					};
@@ -204,19 +206,39 @@ export default {
 		 * Zoom in a step-wise manner
 		 * 
 		 * @param {number} zoom Intended final zoom level
+		 * @param {Object} destLatLng Destination position
 		 * @returns {Promise}
 		 */
-		doZoom(zoom) {
+		doZoom(zoom, destLatLng) {
 			if (zoom === this.mapObject.getZoom()) return Promise.resolve();
-			//console.log('doZoom', this.mapObject.getZoom(), zoom);
+
+			//console.log('doZoom', this.mapObject.getZoom(), zoom, destLatLng);
 			let listener;
 
-			return Promise.resolve()
-				.then(() => {
-					this.mapObject.setZoom(zoom);
-				});
+			return new Promise(resolve => {
+				const waitForZoom = () => {
+					if(this.mapObject.getZoom() !== zoom) {
+						// TODO: Step-wise zoom
+						console.warn('TODO: Step-wise zoom', this.mapObject.getZoom(), zoom);
+					} else {
+						if (listener) google.maps.event.removeListener(listener);
 
-			// FIXME: Hanging promise when relying on "idle"; Infinite loop when attempting to always call; Only on zoom out?
+						// Ensure still targetting "destLatLng"; Bounds get out of the way as we zoom further in allowing re-centering.
+						if (!this.mapObject.getCenter().equals(new google.maps.LatLng(destLatLng))) {
+							console.log('doZoom.re-center', destLatLng);
+							this.doPan(destLatLng).then(() => resolve());
+						} else {
+							console.log('doZoom.resolve');
+							resolve();
+						}
+					}
+				};
+
+				listener = google.maps.event.addListener(this.mapObject, 'idle', waitForZoom);
+				this.mapObject.setZoom(zoom);
+			});
+
+			// TODO: Step-wise zoom
 			console.log('doZoom.promise');
 			return new Promise(resolve => {
 				listener = google.maps.event.addListener(this.mapObject, 'idle', () => {
@@ -242,14 +264,16 @@ export default {
 		 * Wait for any pending motion before starting a zoom
 		 * 
 		 * @param {number} zoom Intended final zoom level
+		 * @param {Object} destLatLng Destination position
 		 * @returns {Promise}
 		 */
-		smoothZoom(zoom) {
-			//console.log('smoothZoom', zoom);
+		smoothZoom(zoom, destLatLng) {
+			//console.log('smoothZoom', zoom, destLatLng);
 
 			return Promise.resolve()
+				.then(() => this.$nextTick()) // When center and zoom are updated at the same time; Do zoom second.
 				.then(() => this.pendingSmooth)
-				.then(() => this.pendingSmooth = this.doZoom(zoom))
+				.then(() => this.pendingSmooth = this.doZoom(zoom, destLatLng))
 				.finally(() => {
 					this.pendingSmooth = null;
 					// NOTE: Not emitting as circular

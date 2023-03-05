@@ -238,7 +238,6 @@ export default {
 				this.$emit('moveend', [this.mapObject.getCenter().lat(), this.mapObject.getCenter().lng()]);
 			});
 
-			// FIXME: Set zoom before bounds?
 			this.mapObject.addListener('zoom_changed', e => {
 				if (this.pendingSmooth) return;
 

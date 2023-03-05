@@ -230,6 +230,7 @@ export default {
 
 				this.$emit('moveend', [this.mapObject.getCenter().lat(), this.mapObject.getCenter().lng()]);
 			});
+
 			this.mapObject.addListener('zoom_changed', e => {
 				if (this.pendingSmooth) return;
 
