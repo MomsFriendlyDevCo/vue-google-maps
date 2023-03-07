@@ -165,7 +165,7 @@ export default {
 
 				return new Promise((resolve, reject) => {
 					const zoomIn = () => {
-						//console.log('zoomIn', this.mapObject.getZoom(), this.pendingZoom);
+						//console.log('smoothPanTo.zoomIn', this.pendingZoom, this.mapObject.getZoom());
 						if(this.mapObject.getZoom() < this.pendingZoom) {
 							this.mapObject.setZoom(Math.min(this.mapObject.getZoom() + 3, this.pendingZoom));
 							this.checkCenter(destLatLng);
@@ -181,7 +181,7 @@ export default {
 					};
 	
 					const zoomOut = () => {
-						//console.log('zoomOut', willAnimatePanTo(destLatLng));
+						//console.log('smoothPanTo.zoomOut', willAnimatePanTo(destLatLng));
 						if(willAnimatePanTo(destLatLng)) {
 							if (listener) google.maps.event.removeListener(listener);
 							this.doPan(destLatLng).then(() => {
@@ -196,24 +196,16 @@ export default {
 					// TODO: Re-apply special options
 					//this.mapObject.setOptions({draggable: false, zoomControl: false, scrollwheel: false, disableDoubleClickZoom: true})
 
-					this.mapObject.setZoom(getOptimalZoomOut(destLatLng, this.pendingZoom));
 					listener = google.maps.event.addListener(this.mapObject, 'idle', zoomOut);
+					zoomOut();
 				})
 			}
 
 			this.pendingZoom = this.mapObject.getZoom();
-			return this.pendingSmooth = Promise.resolve(this.pendingSmooth)
-				.then(() => (willAnimatePanTo(destLatLng))
-					? this.doPan(destLatLng)
-					: smoothPanToWorkAround(destLatLng)
-				)
-				.finally(() => {
-					this.pendingSmooth = null;
-					this.pendingZoom = null;
-					// NOTE: Not emitting as circular
-					//console.log('smoothPanTo.moveend', [this.mapObject.getCenter().lat(), this.mapObject.getCenter().lng()]);
-					//this.$emit('moveend', [this.mapObject.getCenter().lat(), this.mapObject.getCenter().lng()]);
-				});
+			return Promise.resolve()
+				.then(() => this.pendingSmooth)
+				.then(() => this.pendingSmooth = (willAnimatePanTo(destLatLng)) ? this.doPan(destLatLng) : smoothPanToWorkAround(destLatLng))
+				.finally(() => this.pendingSmooth = null);
 		},
 
 
@@ -232,11 +224,11 @@ export default {
 			return new Promise(resolve => {
 				listener = google.maps.event.addListener(this.mapObject, 'idle', () => {
 					if(this.mapObject.getZoom() < zoom) {
-						//console.log('zoom in again', zoom, this.mapObject.getZoom(), Math.min(this.mapObject.getZoom() + 3, zoom))
+						//console.log('doZoom.zoomIn again', zoom, this.mapObject.getZoom(), Math.min(this.mapObject.getZoom() + 3, zoom))
 						this.mapObject.setZoom(Math.min(this.mapObject.getZoom() + 3, zoom));
 						this.checkCenter(destLatLng);
 					} else if(this.mapObject.getZoom() > zoom) {
-						//console.log('zoom out again', zoom, this.mapObject.getZoom(), Math.max(this.mapObject.getZoom() - 3, zoom))
+						//console.log('doZoom.zoomOut again', zoom, this.mapObject.getZoom(), Math.max(this.mapObject.getZoom() - 3, zoom))
 						this.mapObject.setZoom(Math.max(this.mapObject.getZoom() - 3, zoom));
 						this.checkCenter(destLatLng);
 					} else {
@@ -247,11 +239,12 @@ export default {
 						resolve();
 					}
 				});
+
 				if(this.mapObject.getZoom() < zoom) {
-					//console.log('zoom in', zoom, this.mapObject.getZoom(), Math.min(this.mapObject.getZoom() + 3, zoom))
+					//console.log('doZoom.zoomIn', zoom, this.mapObject.getZoom(), Math.min(this.mapObject.getZoom() + 3, zoom))
 					this.mapObject.setZoom(Math.min(this.mapObject.getZoom() + 3, zoom));
 				} else if(this.mapObject.getZoom() > zoom) {
-					//console.log('zoom out', zoom, this.mapObject.getZoom(), Math.max(this.mapObject.getZoom() - 3, zoom))
+					//console.log('doZoom.zoomOut', zoom, this.mapObject.getZoom(), Math.max(this.mapObject.getZoom() - 3, zoom))
 					this.mapObject.setZoom(Math.max(this.mapObject.getZoom() - 3, zoom));
 				}
 			});
@@ -270,18 +263,12 @@ export default {
 			//console.log('smoothZoom', zoom, destLatLng);
 
 			// FIXME: Any need for a heuristic here? Only setting when larger or smaller?
-			// FIXME: Should this entire block wait for "$nextTick"?
-			this.pendingZoom = zoom; // Inform any pending promise of this change to our intended final zoom
-			return this.pendingSmooth = Promise.resolve(this.pendingSmooth)
-				.then(() => this.$nextTick()) // When center and zoom are updated at the same time; Do zoom second.
-				// FIXME: We were waiting for the other smooth to complete here... What if it didn't exist until the next tick
-				.then(() => this.doZoom(zoom, destLatLng))
-				.finally(() => {
-					this.pendingSmooth = null;
-					// NOTE: Not emitting as circular
-					//console.log('smoothZoom.zoomend', this.mapObject.getZoom());
-					//this.$emit('zoomend', this.mapObject.getZoom());
-				});
+			this.pendingZoom = zoom; // Update intended final zoom for in-progress motion
+			return Promise.resolve()
+				.then(() => this.pendingSmooth)
+				.then(() => this.$nextTick()) // Things settled enough that we end races in the correct state
+				.then(() => this.pendingSmooth = this.doZoom(zoom, destLatLng)) // FIXME: Also use "pendingZoom"?
+				.finally(() => this.pendingSmooth = null);
 			
 		},
 	},

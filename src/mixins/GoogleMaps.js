@@ -43,10 +43,12 @@ export default {
 			}, { immediate: true });
 
 			this.$watch('center', () => {
+				//console.log('$watch.center', this.center);
 				this.smoothPanTo(this.convertLatLng(this.center));
 			}, { immediate: true, }); // TODO: deep?
 
 			this.$watch('zoom', () => {
+				//console.log('$watch.zoom', this.zoom);
 				this.smoothZoom(this.zoom, this.convertLatLng(this.center));
 			}, { immediate: true });
 
