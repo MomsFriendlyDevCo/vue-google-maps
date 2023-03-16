@@ -59,6 +59,8 @@ export default {
 			// NOTE: "mapTypeId" may have been set before this mode existed; Set it again now.
 			if (this.map.mapObject.getMapTypeId() !== this.title) this.map.mapObject.setMapTypeId(this.title);
 
+			// FIXME: Force re-fetching of tiles when the existing layer has a cache for this zoom level
+
 			this.ready = true;
 		}, { immediate: true });
 	},
