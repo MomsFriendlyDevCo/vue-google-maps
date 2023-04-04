@@ -38,7 +38,7 @@ export default {
 				// FIXME: What happens to the last mode instance? It will be re-applied but are we orphaning anything?
 				this.mapObject = new google.maps.ImageMapType({
 					getTileUrl: (coord, zoom) => {
-						$debug('getTileUrl', coord, zoom, this.url, this.options);
+						//$debug('getTileUrl', coord, zoom, this.url, this.options);
 						// "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
 						return this.url
 							.replace('{r}', '') // TODO: What is this? Tag?
@@ -54,9 +54,11 @@ export default {
 					),
 					maxZoom: (_.has(this.options, 'maxZoom')) ? parseInt(this.options.maxZoom) : 20,
 					minZoom: (_.has(this.options, 'minZoom')) ? parseInt(this.options.minZoom) : 0,
+					opacity: (_.has(this.options, 'opacity')) ? parseInt(this.options.opacity) : 1,
 					// @ts-ignore TODO 'radius' does not exist in type 'ImageMapTypeOptions'
 					//radius: 1738000,
 					name: this.title,
+					...this.options,
 				});
 
 				switch (this.type) {
