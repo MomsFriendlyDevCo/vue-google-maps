@@ -24,6 +24,7 @@ export default {
 	},
 	data() { return {
 		ready: false,
+		visible: true,
 	}},
 	// NOTE: Has already been destroyed up a level
 	//beforeDestroy() {
@@ -38,6 +39,8 @@ export default {
 				// FIXME: What happens to the last mode instance? It will be re-applied but are we orphaning anything?
 				this.mapObject = new google.maps.ImageMapType({
 					getTileUrl: (coord, zoom) => {
+						if (!this.visible) return;
+
 						//$debug('getTileUrl', coord, zoom, this.url, this.options);
 						// "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
 						return this.url
@@ -82,8 +85,8 @@ export default {
 
 		// TODO: remove and re-add or some way to hide?
 		this.$watch('show', () => {
-			this.$debug('$watch.show', this.show);
-			//this.mapObject.visible = this.show;
+			this.$debug('$watch.show', this.show, this.visible);
+			this.visible = this.show;
 		}, { immediate: true });
 	},
 	render: function(h) {
