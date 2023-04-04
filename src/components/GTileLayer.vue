@@ -18,6 +18,7 @@ export default {
 		type: { type: String, default: 'basemap', enum: ['basemap', 'layer'] },
 		title: { type: String, default: 'TileLayer' }, // TODO: Validate to "mapTypeId" requirements
 		url: { type: String },
+		show: { type: Boolean, default: true },
 		attribution: { type: String },
 		options: { type: Object },
 	},
@@ -30,6 +31,7 @@ export default {
 	//},
 	mounted() {
 		this.$watch('url', () => {
+			if (!this.url) return;
 			$debug('$watch.url', this.url);
 
 			// FIXME: What happens to the last mode instance? It will be re-applied but are we orphaning anything?
@@ -59,7 +61,7 @@ export default {
 			switch (this.type) {
 				case 'layer':
 					// TODO: "insertAt"?
-					this.map.mapObject.overlayMapTypes.push(this.mapObject);
+					this.map.mapObject.overlayMapTypes.insertAt(0, this.mapObject);
 					break;
 				case 'basemap':
 				default:
@@ -71,6 +73,12 @@ export default {
 			}
 
 			this.ready = true;
+		}, { immediate: true });
+
+		// TODO: remove and re-add or some way to hide?
+		this.$watch('show', () => {
+			this.$debug('$watch.show', this.show);
+			//this.mapObject.visible = this.show;
 		}, { immediate: true });
 	},
 	render: function(h) {
