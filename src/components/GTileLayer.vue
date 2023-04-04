@@ -5,7 +5,7 @@ import Options from '../mixins/Options.js';
 //import { CRS, DomEvent, map, latLngBounds, latLng } from 'leaflet';
 
 import Debug from '@doop/debug';
-const $debug = Debug('vue-google-maps/GTileLayer').enable(true);
+const $debug = Debug('vue-google-maps/GTileLayer').enable(false);
 
 /**
  * TileLayer component
@@ -27,12 +27,25 @@ export default {
 		visible: true,
 	}},
 	// NOTE: Has already been destroyed up a level
-	//beforeDestroy() {
-	//	this.map.mapObject.mapTypes.set('TileLayer', null);
-	//},
+	/*
+	beforeDestroy() {
+		// TODO: Any of this correct? Test cases needed. Outside of editing a map we probably never remove these components once added.
+		switch (this.type) {
+			case 'layer':
+				this.mapObject.setMap(null);
+				//this.map.mapObject.overlayMapTypes.remove(this.mapObject); // TODO: Remove from list?
+				break;
+			case 'basemap':
+			default:
+				this.map.mapObject.mapTypes.set(this.title, null);
+				// this.map.mapObject.setMapTypeId(this.title); // TODO: Back to some default? 
+				break;
+		}
+	},
+	*/
 	mounted() {
-		this.$watch('url', () => {
-			$debug('$watch.url', this.title, this.url);
+		this.$watchAll(['title', 'url'], () => {
+			//$debug('$watchAll.title/url', this.title, this.url);
 			if (!this.url) {
 				if (this.map.mapObject.getMapTypeId() !== this.title) this.map.mapObject.setMapTypeId(this.title);
 			} else {
@@ -66,7 +79,6 @@ export default {
 
 				switch (this.type) {
 					case 'layer':
-						// TODO: "insertAt"?
 						this.map.mapObject.overlayMapTypes.insertAt(0, this.mapObject);
 						break;
 					case 'basemap':
