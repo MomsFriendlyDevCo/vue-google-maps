@@ -45,26 +45,6 @@ export default {
 			custom: true,
 			default: null
 		},
-		fill: {
-			type: Boolean,
-			custom: true,
-			default: false
-		},
-		fillColor: {
-			type: String,
-			custom: true,
-			default: '#3388ff'
-		},
-		fillOpacity: {
-			type: Number,
-			custom: true,
-			default: 0.2
-		},
-		fillRule: {
-			type: String,
-			custom: true,
-			default: 'evenodd'
-		},
 		className: {
 			type: String,
 			custom: true,

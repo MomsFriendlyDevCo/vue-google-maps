@@ -5,7 +5,7 @@ import Options from '../mixins/Options.js';
 //import { CRS, DomEvent, map, latLngBounds, latLng } from 'leaflet';
 
 import Debug from '@doop/debug';
-const $debug = Debug('vue-google-maps/GTileLayer').enable(false);
+const $debug = Debug('vue-google-maps/GTileLayer').enable(true);
 
 /**
  * TileLayer component
@@ -15,6 +15,7 @@ export default {
 	mixins: [Options],
 	inject: ['map'],
 	props: {
+		type: { type: String, default: 'basemap', enum: ['basemap', 'layer'] },
 		title: { type: String, default: 'TileLayer' }, // TODO: Validate to "mapTypeId" requirements
 		url: { type: String },
 		attribution: { type: String },
@@ -55,11 +56,19 @@ export default {
 				name: this.title,
 			});
 
-			this.map.mapObject.mapTypes.set(this.title, this.mapObject);
-			// NOTE: "mapTypeId" may have been set before this mode existed; Set it again now.
-			if (this.map.mapObject.getMapTypeId() !== this.title) this.map.mapObject.setMapTypeId(this.title);
-
-			// FIXME: Force re-fetching of tiles when the existing layer has a cache for this zoom level
+			switch (this.type) {
+				case 'layer':
+					// TODO: "insertAt"?
+					this.map.mapObject.overlayMapTypes.push(this.mapObject);
+					break;
+				case 'basemap':
+				default:
+					// NOTE: "mapTypeId" may have been set before this mode existed; Set it again now.
+					this.map.mapObject.mapTypes.set(this.title, this.mapObject);
+					// FIXME: Force re-fetching of tiles when the existing layer has a cache for this zoom level
+					if (this.map.mapObject.getMapTypeId() !== this.title) this.map.mapObject.setMapTypeId(this.title);
+					break;
+			}
 
 			this.ready = true;
 		}, { immediate: true });

@@ -26,26 +26,22 @@ export default {
 			type: Boolean,
 			default: false,
 		},
+		fill: {
+			type: Boolean,
+			default: true,
+		},
 		fillColor: {
 			type: String,
-			default: "#ff3300"
+			default: '#3388ff'
 		},
 		fillOpacity: {
 			type: Number,
-			default: 1.0
+			default: 0.2
 		},
-		/*
-		smoothFactor: {
-			type: Number,
-			custom: true,
-			default: 1.0
+		fillRule: {
+			type: String,
+			default: 'evenodd'
 		},
-		noClip: {
-			type: Boolean,
-			custom: true,
-			default: false
-		}
-		*/
 	},
 	beforeDestroy() {
 		this.mapObject.setMap(null);

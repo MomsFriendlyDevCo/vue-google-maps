@@ -18,14 +18,6 @@ export default {
 		ready: false,
 	}},
 	props: {
-		clickable: {
-			type: Boolean,
-			default: true,
-		},
-		draggable: {
-			type: Boolean,
-			default: false,
-		},
 		/*
 		smoothFactor: {
 			type: Number,
