@@ -31,46 +31,49 @@ export default {
 	//},
 	mounted() {
 		this.$watch('url', () => {
-			if (!this.url) return;
-			$debug('$watch.url', this.url);
+			$debug('$watch.url', this.title, this.url);
+			if (!this.url) {
+				if (this.map.mapObject.getMapTypeId() !== this.title) this.map.mapObject.setMapTypeId(this.title);
+			} else {
+				// FIXME: What happens to the last mode instance? It will be re-applied but are we orphaning anything?
+				this.mapObject = new google.maps.ImageMapType({
+					getTileUrl: (coord, zoom) => {
+						$debug('getTileUrl', coord, zoom, this.url, this.options);
+						// "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+						return this.url
+							.replace('{r}', '') // TODO: What is this? Tag?
+							.replace('{s}', _.has(this.options, 'subdomains') ? _.sample(this.options.subdomains) : 'a')
+							.replace('{x}', coord.x)
+							.replace('{y}', coord.y)
+							.replace('{z}', zoom);
+					},
+					// TODO: Separate X/Y?
+					tileSize: new google.maps.Size(
+						(_.has(this.options, 'tileSize')) ? parseInt(this.options.tileSize) : 256,
+						(_.has(this.options, 'tileSize')) ? parseInt(this.options.tileSize) : 256,
+					),
+					maxZoom: (_.has(this.options, 'maxZoom')) ? parseInt(this.options.maxZoom) : 20,
+					minZoom: (_.has(this.options, 'minZoom')) ? parseInt(this.options.minZoom) : 0,
+					// @ts-ignore TODO 'radius' does not exist in type 'ImageMapTypeOptions'
+					//radius: 1738000,
+					name: this.title,
+				});
 
-			// FIXME: What happens to the last mode instance? It will be re-applied but are we orphaning anything?
-			this.mapObject = new google.maps.ImageMapType({
-				getTileUrl: (coord, zoom) => {
-					$debug('getTileUrl', coord, zoom, this.url, this.options);
-					// "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-					return this.url
-						.replace('{r}', '') // TODO: What is this? Tag?
-						.replace('{s}', _.has(this.options, 'subdomains') ? _.sample(this.options.subdomains) : 'a')
-						.replace('{x}', coord.x)
-						.replace('{y}', coord.y)
-						.replace('{z}', zoom);
-				},
-				// TODO: Separate X/Y?
-				tileSize: new google.maps.Size(
-					(_.has(this.options, 'tileSize')) ? parseInt(this.options.tileSize) : 256,
-					(_.has(this.options, 'tileSize')) ? parseInt(this.options.tileSize) : 256,
-				),
-				maxZoom: (_.has(this.options, 'maxZoom')) ? parseInt(this.options.maxZoom) : 20,
-				minZoom: (_.has(this.options, 'minZoom')) ? parseInt(this.options.minZoom) : 0,
-				// @ts-ignore TODO 'radius' does not exist in type 'ImageMapTypeOptions'
-				//radius: 1738000,
-				name: this.title,
-			});
-
-			switch (this.type) {
-				case 'layer':
-					// TODO: "insertAt"?
-					this.map.mapObject.overlayMapTypes.insertAt(0, this.mapObject);
-					break;
-				case 'basemap':
-				default:
-					// NOTE: "mapTypeId" may have been set before this mode existed; Set it again now.
-					this.map.mapObject.mapTypes.set(this.title, this.mapObject);
-					// FIXME: Force re-fetching of tiles when the existing layer has a cache for this zoom level
-					if (this.map.mapObject.getMapTypeId() !== this.title) this.map.mapObject.setMapTypeId(this.title);
-					break;
+				switch (this.type) {
+					case 'layer':
+						// TODO: "insertAt"?
+						this.map.mapObject.overlayMapTypes.insertAt(0, this.mapObject);
+						break;
+					case 'basemap':
+					default:
+						// NOTE: "mapTypeId" may have been set before this mode existed; Set it again now.
+						this.map.mapObject.mapTypes.set(this.title, this.mapObject);
+						// FIXME: Force re-fetching of tiles when the existing layer has a cache for this zoom level
+						if (this.map.mapObject.getMapTypeId() !== this.title) this.map.mapObject.setMapTypeId(this.title);
+						break;
+				}
 			}
+			
 
 			this.ready = true;
 		}, { immediate: true });
