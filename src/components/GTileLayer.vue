@@ -38,17 +38,15 @@ export default {
 			case 'basemap':
 			default:
 				this.map.mapObject.mapTypes.set(this.title, null);
-				// this.map.mapObject.setMapTypeId(this.title); // TODO: Back to some default? 
+				// this.map.mapObject.setMapTypeId(this.title); // TODO: Back to some default?
 				break;
 		}
 	},
 	*/
 	mounted() {
 		this.$watchAll(['title', 'url'], () => {
-			//$debug('$watchAll.title/url', this.title, this.url);
-			if (!this.url) {
-				if (this.map.mapObject.getMapTypeId() !== this.title) this.map.mapObject.setMapTypeId(this.title);
-			} else {
+			$debug('$watchAll.title/url', this.title, this.url, this.options);
+			if (this.url) {
 				// FIXME: What happens to the last mode instance? It will be re-applied but are we orphaning anything?
 				this.mapObject = new google.maps.ImageMapType({
 					getTileUrl: (coord, zoom) => {
@@ -76,21 +74,21 @@ export default {
 					name: this.title,
 					...this.options,
 				});
-
-				switch (this.type) {
-					case 'layer':
-						this.map.mapObject.overlayMapTypes.insertAt(0, this.mapObject);
-						break;
-					case 'basemap':
-					default:
-						// NOTE: "mapTypeId" may have been set before this mode existed; Set it again now.
-						this.map.mapObject.mapTypes.set(this.title, this.mapObject);
-						// FIXME: Force re-fetching of tiles when the existing layer has a cache for this zoom level
-						if (this.map.mapObject.getMapTypeId() !== this.title) this.map.mapObject.setMapTypeId(this.title);
-						break;
-				}
 			}
-			
+
+			switch (this.type) {
+				case 'layer':
+					if (this.mapObject) this.map.mapObject.overlayMapTypes.insertAt(0, this.mapObject);
+					break;
+				case 'basemap':
+				default:
+					// NOTE: "mapTypeId" may have been set before this mode existed; Set it again now.
+					if (this.mapObject) this.map.mapObject.mapTypes.set(this.title, this.mapObject);
+					// FIXME: Force re-fetching of tiles when the existing layer has a cache for this zoom level
+					if (this.map.mapObject.getMapTypeId() !== this.title) this.map.mapObject.setMapTypeId(this.title);
+					if (this.options) this.map.mapObject.setOptions(this.options);
+					break;
+			}
 
 			this.ready = true;
 		}, { immediate: true });
