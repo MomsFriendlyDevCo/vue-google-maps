@@ -227,10 +227,21 @@ export default {
 
 			console.log('Creating Google Maps Instance', this.$el, options);
 			this.mapObject = new google.maps.Map(this.$el, options);
+			//if (_.isFunction(this.mapObject.getMapCapabilities)) console.log('Map Capabilities', this.mapObject.getMapCapabilities());
 
 			this.mapObject.addListener('click', e => this.$emit('click', [e.latLng.lat(), e.latLng.lng()]));
-			this.mapObject.addListener('heading_changed', e => this.$emit('headingend', this.mapObject.getHeading()));
-			this.mapObject.addListener('tilt_changed', e => this.$emit('tiltend', this.mapObject.getTilt()));
+
+			this.mapObject.addListener('heading_changed', e => {
+				if (this.pendingSmooth) return;
+
+				this.$emit('headingend', this.mapObject.getHeading());
+			});
+
+			this.mapObject.addListener('tilt_changed', e => {
+				if (this.pendingSmooth) return;
+
+				this.$emit('tiltend', this.mapObject.getTilt());
+			});
 
 			this.mapObject.addListener('center_changed', e => {
 				if (this.pendingSmooth) return;
