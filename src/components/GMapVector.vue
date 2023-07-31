@@ -1,5 +1,6 @@
 <script>
 //import { optionsMerger, propsBinder, debounce } from '../utils/utils.js';
+import Utils from '../mixins/Utils.js';
 import GoogleMaps from '../mixins/GoogleMaps.js';
 import Options from '../mixins/Options.js';
 import SmoothMotion from '../mixins/SmoothMotion.js';
@@ -13,7 +14,7 @@ import SmoothMotion from '../mixins/SmoothMotion.js';
  */
 export default {
 	name: 'GMapVector',
-	mixins: [GoogleMaps, Options, SmoothMotion],
+	mixins: [Utils, GoogleMaps, Options, SmoothMotion],
 	provide() { return {
 		map: this,
 	}},
@@ -230,6 +231,7 @@ export default {
 			//if (_.isFunction(this.mapObject.getMapCapabilities)) console.log('Map Capabilities', this.mapObject.getMapCapabilities());
 
 			this.mapObject.addListener('click', e => this.$emit('click', [e.latLng.lat(), e.latLng.lng()]));
+			this.mapObject.addListener('mousemove', e => this.$emit('mousemove', [e.latLng.lat(), e.latLng.lng()]));
 
 			this.mapObject.addListener('heading_changed', e => {
 				if (this.pendingSmooth) return;

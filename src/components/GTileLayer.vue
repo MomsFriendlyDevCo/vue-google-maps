@@ -5,7 +5,7 @@ import Options from '../mixins/Options.js';
 //import { CRS, DomEvent, map, latLngBounds, latLng } from 'leaflet';
 
 import Debug from '@doop/debug';
-const $debug = Debug('vue-google-maps/GTileLayer').enable(false);
+const $debug = Debug('vue-google-maps/GTileLayer').enable(true);
 
 /**
  * TileLayer component
@@ -85,6 +85,7 @@ export default {
 					// NOTE: "mapTypeId" may have been set before this mode existed; Set it again now.
 					if (this.mapObject) this.map.mapObject.mapTypes.set(this.title, this.mapObject);
 					// FIXME: Force re-fetching of tiles when the existing layer has a cache for this zoom level
+					$debug('getMapTypeId', this.map.mapObject.getMapTypeId(), this.title, this.options);
 					if (this.map.mapObject.getMapTypeId() !== this.title) this.map.mapObject.setMapTypeId(this.title);
 					if (this.options) this.map.mapObject.setOptions(this.options);
 					break;

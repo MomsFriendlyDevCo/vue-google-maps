@@ -1,6 +1,7 @@
 <script>
 //import { optionsMerger, propsBinder, debounce } from '../utils/utils.js';
 import Poly from '../mixins/Poly.js';
+import Utils from '../mixins/Utils.js';
 import Options from '../mixins/Options.js';
 //import { CRS, DomEvent, map, latLngBounds, latLng } from 'leaflet';
 
@@ -12,20 +13,12 @@ import Options from '../mixins/Options.js';
  */
 export default {
 	name: 'GPolygon',
-	mixins: [Poly, Options],
+	mixins: [Poly, Utils, Options],
 	inject: ['map'],
 	data() { return {
 		ready: false,
 	}},
 	props: {
-		clickable: {
-			type: Boolean,
-			default: true,
-		},
-		draggable: {
-			type: Boolean,
-			default: false,
-		},
 		fill: {
 			type: Boolean,
 			default: true,
@@ -59,7 +52,7 @@ export default {
 			geodesic: false,
 			icons: [],
 			map: this.map.mapObject,
-			path: this.latLngs.map(p => ({ lat: p[0], lng: p[1] })),
+			path: new google.maps.MVCArray(this.path),
 			visible: this.visible,
 			zIndex: this.zIndex,
 		});
@@ -69,6 +62,23 @@ export default {
 		this.$watch('editable', () => this.mapObject.setEditable(this.editable));
 		this.$watch('visible', () => this.mapObject.setVisible(this.visible));
 		//this.$watch('zIndex', () => this.mapObject.setZIndex(this.zIndex)); // Method does not exist in Poly
+		this.$watch('latLngs', () => this.mapObject.setPath(new google.maps.MVCArray(this.path)), { deep: true });
+
+		if (this.editable && this.path.length === 0) this.startCreate();
+
+		this.mapObject.addListener('dragend', e => {
+			if (!this.draggable) return;
+
+			this.update();
+		});
+
+		this.mapObject.addListener('mouseover', e => this.$emit('mouseover', e));
+		this.mapObject.addListener('mouseout', e => this.$emit('mouseout', e));
+		this.mapObject.addListener('click', e => {
+			if (!this.clickable) return;
+
+			this.$emit('click', e);
+		});
 
 		this.ready = true;
 	},

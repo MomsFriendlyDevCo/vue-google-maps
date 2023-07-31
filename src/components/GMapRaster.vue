@@ -1,5 +1,6 @@
 <script>
 //import { optionsMerger, propsBinder, debounce } from '../utils/utils.js';
+import Utils from '../mixins/Utils.js';
 import GoogleMaps from '../mixins/GoogleMaps.js';
 import Options from '../mixins/Options.js';
 import SmoothMotion from '../mixins/SmoothMotion.js';
@@ -13,7 +14,7 @@ import SmoothMotion from '../mixins/SmoothMotion.js';
  */
 export default {
 	name: 'GMapRaster',
-	mixins: [GoogleMaps, Options, SmoothMotion],
+	mixins: [Utils, GoogleMaps, Options, SmoothMotion],
 	provide() { return {
 		map: this,
 	}},
@@ -242,6 +243,8 @@ export default {
 
 				this.$emit('zoomend', this.mapObject.getZoom());
 			});
+
+			this.mapObject.addListener('mousemove', e => this.$emit('mousemove', [e.latLng.lat(), e.latLng.lng()]));
 
 			this.initWatchers();
 

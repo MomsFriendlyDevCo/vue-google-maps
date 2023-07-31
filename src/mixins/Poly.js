@@ -1,7 +1,11 @@
+import Utils from './Utils';
 import Path from './Path';
 
 export default {
-	mixins: [Path],
+	mixins: [Utils, Path],
+	data() { return {
+		listeners: {},
+	}},
 	props: {
 		latLngs: {
 			type: Array,
@@ -27,5 +31,83 @@ export default {
 			type: Number,
 			default: 0,
 		},
-	}
+	},
+	computed: {
+		path() {
+			return this.latLngs.map(p => new google.maps.LatLng(this.convertLatLng(p)));
+		},
+	},
+	methods: {
+		startCreate() {
+			// TODO: Creation: Polyline until closed then becomes polygon?
+			const path = this.mapObject.getPath();
+			let pathIdx = 0;
+
+			this.listeners.handleMapClick = this.map.mapObject.addListener('click', e => {
+				//console.log('click', e.latLng.toUrlValue(6), pathIdx);
+				google.maps.event.removeListener(this.listeners.handleMapClick);
+
+				if (pathIdx === 0) {
+					path.setAt(pathIdx++, e.latLng);
+
+					this.listeners.handleMapMousemove = this.map.mapObject.addListener('mousemove', e => {
+						//console.log('mousemove', e.latLng.toUrlValue(6), pathIdx);
+						path.setAt(pathIdx, e.latLng);
+					});
+
+					// NOTE: These polyline level events only take precidence when polyline is in "editable" mode
+					this.listeners.handleLineClick = this.mapObject.addListener('click', e => {
+						//console.log('line click', e.latLng.toUrlValue(6));
+						pathIdx++;
+					});
+
+					this.listeners.handleLineDblClick = this.mapObject.addListener('dblclick', e => {
+						//console.log('line dblclick', e.latLng.toUrlValue(6));
+						this.finishCreate();
+					});
+
+					this.listeners.handleKeyUp = e => {
+						//console.log('keyup', e, e.key);
+						switch (e.key) {
+							case 'Enter':
+								this.finishCreate();
+								break;
+							case 'Escape':
+								this.finishCreate(true);
+								break;
+						}
+					};
+					window.addEventListener('keyup', this.listeners.handleKeyUp);
+
+					this.listeners.handleEditable = this.$watch('editable', (newVal, oldVal) => {
+						console.log('editable', newVal, oldVal, (oldVal && !newVal));
+						if (oldVal && !newVal) this.finishCreate();
+					});
+				} else {
+					pathIdx++;
+				}
+			});
+		},
+
+
+		finishCreate(reset = false) {
+			if (this.listeners?.handleMapClick) google.maps.event.removeListener(this.listeners.handleMapClick);
+			if (this.listeners?.handleMapMousemove) google.maps.event.removeListener(this.listeners.handleMapMousemove);
+			if (this.listeners?.handleLineClick) google.maps.event.removeListener(this.listeners.handleLineClick);
+			if (this.listeners?.handleLineDblClick) google.maps.event.removeListener(this.listeners.handleLineDblClick);
+			if (this.listeners?.handleKeyUp) window.removeEventListener('keyup', this.listeners.handleKeyUp);
+			if (this.listeners?.handleEditable) this.listeners.handleEditable();
+
+			if (reset) this.mapObject.setPath(new google.maps.MVCArray(this.path));
+
+			this.update();
+		},
+
+
+		update() {
+			const evt = this.mapObject.getPath().getArray().map(p => ({ lat: p.lat(), lng: p.lng() }));
+			this.$emit('update:latLngs', evt);
+			this.$emit('update:lat-lngs', evt);
+		},
+	},
 };
