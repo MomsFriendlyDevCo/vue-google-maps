@@ -39,7 +39,12 @@ export default {
 	},
 	methods: {
 		startCreate() {
+			this.map.mapObject.setOptions({ draggableCursor: 'crosshair' });
+
 			// TODO: Creation: Polyline until closed then becomes polygon?
+			// Reset to be sure we're always creating from the start
+			this.mapObject.setPath(new google.maps.MVCArray());
+
 			const path = this.mapObject.getPath();
 			let pathIdx = 0;
 
@@ -80,7 +85,6 @@ export default {
 					window.addEventListener('keyup', this.listeners.handleKeyUp);
 
 					this.listeners.handleEditable = this.$watch('editable', (newVal, oldVal) => {
-						console.log('editable', newVal, oldVal, (oldVal && !newVal));
 						if (oldVal && !newVal) this.finishCreate();
 					});
 				} else {
@@ -91,6 +95,7 @@ export default {
 
 
 		finishCreate(reset = false) {
+			this.map.mapObject.setOptions({ draggableCursor: null });
 			if (this.listeners?.handleMapClick) google.maps.event.removeListener(this.listeners.handleMapClick);
 			if (this.listeners?.handleMapMousemove) google.maps.event.removeListener(this.listeners.handleMapMousemove);
 			if (this.listeners?.handleLineClick) google.maps.event.removeListener(this.listeners.handleLineClick);

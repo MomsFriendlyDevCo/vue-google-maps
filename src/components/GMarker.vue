@@ -1,6 +1,7 @@
 <script>
 //import { optionsMerger, propsBinder, debounce } from '../utils/utils.js';
 //import Layer from '../mixins/Layer.js';
+import Utils from '../mixins/Utils.js';
 import Options from '../mixins/Options.js';
 //import { CRS, DomEvent, map, latLngBounds, latLng } from 'leaflet';
 
@@ -12,7 +13,7 @@ import Options from '../mixins/Options.js';
  */
 export default {
 	name: 'GMarker',
-	mixins: [Options],
+	mixins: [Utils, Options],
 	inject: ['map'],
 	props: {
 		/*
@@ -29,9 +30,13 @@ export default {
 			type: Boolean,
 			default: false,
 		},
+		// In the context of markers used only for creation. Not understood by Google Maps
+		editable: {
+			type: Boolean,
+			default: false,
+		},
 		position: {
 			type: [Object, Array],
-			custom: true,
 			default: null,
 		},
 		label: {
@@ -40,7 +45,6 @@ export default {
 		},
 		icon: {
 			type: Object,
-			custom: false,
 			default: () => ({
 				anchor: new google.maps.Point(15, 30),
 				path: 'M10.453 14.016l6.563-6.609-1.406-1.406-5.156 5.203-2.063-2.109-1.406 1.406zM12 2.016q2.906 0 4.945 2.039t2.039 4.945q0 1.453-0.727 3.328t-1.758 3.516-2.039 3.070-1.711 2.273l-0.75 0.797q-0.281-0.328-0.75-0.867t-1.688-2.156-2.133-3.141-1.664-3.445-0.75-3.375q0-2.906 2.039-4.945t4.945-2.039z',
@@ -75,14 +79,49 @@ export default {
 	},
 	data() { return {
 		ready: false,
+		listeners: {},
 	}},
 	beforeDestroy() {
 		this.mapObject.setMap(null);
 	},
+	// TODO: Encapsulate for use with HtmlMarker also
+	methods: {
+		startCreate() {
+			this.map.mapObject.setOptions({ draggableCursor: 'crosshair' });
+			this.listeners.handleMapClick = this.map.mapObject.addListener('click', e => {
+				console.log('click', e.latLng.toUrlValue(6));
+				google.maps.event.removeListener(this.listeners.handleMapClick);
+
+				this.mapObject.setPosition(e.latLng);
+
+				// TODO: Do something with <ESC> key?
+
+				this.finishCreate();
+			});
+
+			this.listeners.handleEditable = this.$watch('editable', (newVal, oldVal) => {
+				if (oldVal && !newVal) this.finishCreate();
+			});
+		},
+		finishCreate(reset = false) {
+			this.map.mapObject.setOptions({ draggableCursor: null });
+			if (this.listeners?.handleMapClick) google.maps.event.removeListener(this.listeners.handleMapClick);
+			if (this.listeners?.handleEditable) this.listeners.handleEditable();
+
+			if (reset) this.mapObject.setPosition(new google.maps.LatLng(this.convertLatLng(this.position)));
+
+			this.update();
+		},
+		update() {
+			const p = this.mapObject.getPosition();
+			const evt = { lat: p.lat(), lng: p.lng() };
+			this.$emit('update:latLng', evt);
+			this.$emit('update:lat-lng', evt);
+		},
+	},
 	mounted() {
 		this.mapObject = new google.maps.Marker({
-			// TODO: Handle array or object
-			position: { lat: this.position[0], lng: this.position[1] },
+			position: (this.position) ? new google.maps.LatLng(this.convertLatLng(this.position)) : undefined,
 			clickable: this.clickable,
 			draggable: this.draggable,
 			label: this.label,
@@ -94,7 +133,9 @@ export default {
 			zIndex: this.zIndex,
 		});
 
-		this.$watch('position', () => this.mapObject.setPosition({ lat: this.position[0], lng: this.position[1] }));
+		this.$watch('position', () => {
+			if (this.position) this.mapObject.setPosition(new google.maps.LatLng(this.convertLatLng(this.position)));
+		});
 		this.$watch('clickable', () => this.mapObject.setClickable(this.clickable));
 		this.$watch('draggable', () => this.mapObject.setDraggable(this.draggable));
 		this.$watch('visible', () => this.mapObject.setVisible(this.visible));
@@ -115,6 +156,8 @@ export default {
 			//this.$emit('mouseover', e);
 		});
 		*/
+
+		if (this.editable && !this.position) this.startCreate();
 
 		this.mapObject.addListener('dragend', e => {
 			if (!this.draggable) return;
