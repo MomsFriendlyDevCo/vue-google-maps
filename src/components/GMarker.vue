@@ -102,11 +102,17 @@ export default {
 			this.listeners.handleEditable = this.$watch('editable', (newVal, oldVal) => {
 				if (oldVal && !newVal) this.finishCreate();
 			});
+
+			// End creation mode if position is updated externally
+			this.listeners.handlePosition = this.$watch('position', () => {
+				if (this.position) this.finishCreate();
+			});
 		},
 		finishCreate(reset = false) {
 			this.map.mapObject.setOptions({ draggableCursor: null });
 			if (this.listeners?.handleMapClick) google.maps.event.removeListener(this.listeners.handleMapClick);
 			if (this.listeners?.handleEditable) this.listeners.handleEditable();
+			if (this.listeners?.handlePosition) this.listeners.handlePosition();
 
 			if (reset) this.mapObject.setPosition(new google.maps.LatLng(this.convertLatLng(this.position)));
 
@@ -114,6 +120,8 @@ export default {
 		},
 		update() {
 			const p = this.mapObject.getPosition();
+			if (!p) return;
+
 			const evt = { lat: p.lat(), lng: p.lng() };
 			this.$emit('update:latLng', evt);
 			this.$emit('update:lat-lng', evt);
@@ -157,6 +165,7 @@ export default {
 		});
 		*/
 
+		// FIXME: Also test if position is empty?
 		if (this.editable && !this.position) this.startCreate();
 
 		this.mapObject.addListener('dragend', e => {

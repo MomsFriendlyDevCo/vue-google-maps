@@ -87,6 +87,11 @@ export default {
 					this.listeners.handleEditable = this.$watch('editable', (newVal, oldVal) => {
 						if (oldVal && !newVal) this.finishCreate();
 					});
+
+					// End creation mode if position is updated externally
+					this.listeners.handlePosition = this.$watch('position', () => {
+						if (this.position) this.finishCreate();
+					});
 				} else {
 					pathIdx++;
 				}
@@ -102,6 +107,7 @@ export default {
 			if (this.listeners?.handleLineDblClick) google.maps.event.removeListener(this.listeners.handleLineDblClick);
 			if (this.listeners?.handleKeyUp) window.removeEventListener('keyup', this.listeners.handleKeyUp);
 			if (this.listeners?.handleEditable) this.listeners.handleEditable();
+			if (this.listeners?.handlePosition) this.listeners.handlePosition();
 
 			if (reset) this.mapObject.setPath(new google.maps.MVCArray(this.path));
 
