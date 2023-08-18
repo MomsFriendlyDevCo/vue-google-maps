@@ -36,6 +36,18 @@ export default {
 			default: 'evenodd'
 		},
 	},
+	computed: {
+		path() {
+			return this.latLngs.map(ring => new google.maps.MVCArray(ring.map(point => new google.maps.LatLng(this.convertLatLng(point)))));
+		},
+	},
+	methods: {
+		update() {
+			const evt = this.mapObject.getPaths().getArray().map(ring => ring.getArray().map(p => ({ lat: p.lat(), lng: p.lng() })));
+			this.$emit('update:latLngs', evt);
+			this.$emit('update:lat-lngs', evt);
+		},
+	},
 	beforeDestroy() {
 		this.mapObject.setMap(null);
 	},
@@ -52,7 +64,7 @@ export default {
 			geodesic: false,
 			icons: [],
 			map: this.map.mapObject,
-			path: new google.maps.MVCArray(this.path),
+			paths: new google.maps.MVCArray(this.path),
 			visible: this.visible,
 			zIndex: this.zIndex,
 		});
@@ -62,7 +74,7 @@ export default {
 		this.$watch('editable', () => this.mapObject.setEditable(this.editable));
 		this.$watch('visible', () => this.mapObject.setVisible(this.visible));
 		//this.$watch('zIndex', () => this.mapObject.setZIndex(this.zIndex)); // Method does not exist in Poly
-		this.$watch('latLngs', () => this.mapObject.setPath(new google.maps.MVCArray(this.path)), { deep: true });
+		this.$watch('latLngs', () => this.mapObject.setPaths(new google.maps.MVCArray(this.path)), { deep: true });
 
 		if (this.editable && this.path.length === 0) this.startCreate();
 

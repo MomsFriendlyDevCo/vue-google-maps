@@ -32,11 +32,6 @@ export default {
 			default: 0,
 		},
 	},
-	computed: {
-		path() {
-			return this.latLngs.map(p => new google.maps.LatLng(this.convertLatLng(p)));
-		},
-	},
 	methods: {
 		startCreate() {
 			this.map.mapObject.setOptions({ draggableCursor: 'crosshair' });
@@ -112,13 +107,6 @@ export default {
 			if (reset) this.mapObject.setPath(new google.maps.MVCArray(this.path));
 
 			this.update();
-		},
-
-
-		update() {
-			const evt = this.mapObject.getPath().getArray().map(p => ({ lat: p.lat(), lng: p.lng() }));
-			this.$emit('update:latLngs', evt);
-			this.$emit('update:lat-lngs', evt);
 		},
 	},
 };

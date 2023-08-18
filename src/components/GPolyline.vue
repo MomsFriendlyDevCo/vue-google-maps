@@ -32,6 +32,18 @@ export default {
 		}
 		*/
 	},
+	computed: {
+		path() {
+			return this.latLngs.map(p => new google.maps.LatLng(this.convertLatLng(p)));
+		},
+	},
+	methods: {
+		update() {
+			const evt = this.mapObject.getPath().getArray().map(p => ({ lat: p.lat(), lng: p.lng() }));
+			this.$emit('update:latLngs', evt);
+			this.$emit('update:lat-lngs', evt);
+		},
+	},
 	beforeDestroy() {
 		this.mapObject.setMap(null);
 	},
