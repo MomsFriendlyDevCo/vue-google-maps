@@ -48,7 +48,6 @@ export default {
 		// @see https://gis.stackexchange.com/a/133535/37614
 		// @see https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#ECMAScript_(JavaScript/ActionScript,_etc.)
 		convertLatToTile(lat, zoom) {
-			lat = lat * Math.PI / 180; // Degrees to Radians
 			return (Math.floor((1-Math.log(Math.tan(lat*Math.PI/180) + 1/Math.cos(lat*Math.PI/180))/Math.PI)/2 *Math.pow(2,zoom)));
 		},
 		convertLngToTile(lng, zoom) {
@@ -71,10 +70,7 @@ export default {
 		update() {
 			if (!this.url) return;
 
-			// TODO: Also fetch neighbouring (on screen) tiles
-
 			const mapObject = this.map.mapObject;
-			$debug('mapObject', mapObject);
 			const center = this.map.mapObject.getCenter();
 			$debug('center', center);
 			if (!center) return;
@@ -83,62 +79,67 @@ export default {
 			$debug('coords', coords);
 			const zoom = this.map.mapObject.getZoom();
 			$debug('zoom', zoom);
-			const url = this.getTileUrl(
-				this.convertLatToTile(coords[1], zoom),
-				this.convertLngToTile(coords[0], zoom),
-				this.convertZoomtoTile(zoom),
-			);
-			$debug('url', url);
 
-			// TODO: Axios? $http?
-			// TODO: Cancel pending
-			return fetch(url)
-				.then(res => res.json())
-				.then(features => {
-					$debug('features', features);
-					return features.map(feature => {
-						switch (feature.geometry.type) {
-							case 'MultiPolygon':
-							case 'Polygon':
-								const polygonPaths = new google.maps.MVCArray(
-									feature.geometry.coordinates
-										.map(ring => new google.maps.MVCArray(ring.map(point => new google.maps.LatLng(this.convertLatLng([point[1],point[0]])))))
-								);
-								if (_.has(this.featuresById, feature.properties.id)) { // Update existing feature
-									this.featuresById[feature.properties.id].setPaths(polygonPaths);
-								} else { // Create new feature
-									return this.featuresById[feature.properties.id] = new google.maps.Polygon({
-										...this.styles.polygon,
-										geodesic: false,
-										icons: [],
-										map: this.map.mapObject,
-										paths: polygonPaths,
-										visible: this.visible,
-										//zIndex: 1,
-									});
-								}
-							case 'Point':
-							case 'Polyline':
-							default:
-								console.warn(`Feature type "${feature.geometry.type}" not yet implemented!`);
-								break;
-						}
-					})
-				})
-				.then(features => {
-					//features.forEach(feature => {
-					//	feature.set('id', `geojsonlayer-${this.title}-${feature.properties.id}`);
-					//});
-					$debug('features', features)
-				})
-				.finally(() => {
-					this.ready = true;
-				})
+			// Fetch neighbouring tiles
+			const directions = [
+				[0,0],
+				[-1,-1],
+				[-1,0],
+				[-1,1],
+				[0,-1],
+				[0,0],
+				[0,1],
+				[1,-1],
+				[1,0],
+				[1,1],
+			];
 
-			// TODO: Find matching feature if already created
-			// TODO: Update position/paths
+			return Promise.all(directions.map(direction => {
+				const url = this.getTileUrl(
+					this.convertLngToTile(coords[1], zoom) + direction[1],
+					this.convertLatToTile(coords[0], zoom) + direction[0],
+					this.convertZoomtoTile(zoom),
+				);
+				$debug('url', url);
 
-			
+				// TODO: Axios? $http?
+				// TODO: Cancel pending
+				return fetch(url)
+					.then(res => res.json())
+					.then(features => {
+						return features.map(feature => {
+							switch (feature.geometry.type) {
+								case 'MultiPolygon':
+								case 'Polygon':
+									const polygonPaths = new google.maps.MVCArray(
+										feature.geometry.coordinates
+											.map(ring => new google.maps.MVCArray(ring.map(point => new google.maps.LatLng(this.convertLatLng([point[1],point[0]])))))
+									);
+									if (_.has(this.featuresById, feature.properties.id)) { // Update existing feature
+										this.featuresById[feature.properties.id].setPaths(polygonPaths);
+									} else { // Create new feature
+										return this.featuresById[feature.properties.id] = new google.maps.Polygon({
+											...this.styles.polygon,
+											geodesic: false,
+											icons: [],
+											map: this.map.mapObject,
+											paths: polygonPaths,
+											visible: this.visible,
+											//zIndex: 1,
+										});
+									}
+								case 'Point':
+								case 'Polyline':
+								default:
+									console.warn(`Feature type "${feature.geometry.type}" not yet implemented!`);
+									break;
+							}
+						});
+					});
+			}))
+			.finally(() => {
+				this.ready = true;
+			});
 		},
 	},
 	beforeDestroy() {
