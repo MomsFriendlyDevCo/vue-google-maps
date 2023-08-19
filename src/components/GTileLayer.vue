@@ -50,9 +50,10 @@ export default {
 				// FIXME: What happens to the last mode instance? It will be re-applied but are we orphaning anything?
 				this.mapObject = new google.maps.ImageMapType({
 					getTileUrl: (coord, zoom) => {
+						$debug('getTileUrl', this.visible);
 						if (!this.visible) return;
 
-						//$debug('getTileUrl', coord, zoom, this.url, this.options);
+						$debug('getTileUrl', coord, zoom, this.url, this.options);
 						// "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
 						return this.url
 							.replace('{r}', '') // TODO: What is this? Tag?

@@ -13,4 +13,5 @@ export { default as GHtmlMarker } from './components/GHtmlMarker';
 export { default as GInfoWindow } from './components/GInfoWindow';
 export { default as GCrosshair } from './components/GCrosshair';
 
+export { default as GGeojsonLayer } from './components/GGeojsonLayer';
 export { default as GTileLayer } from './components/GTileLayer';
