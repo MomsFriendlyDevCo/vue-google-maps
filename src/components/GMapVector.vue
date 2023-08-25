@@ -17,6 +17,7 @@ export default {
 	mixins: [Utils, GoogleMaps, Options, SmoothMotion],
 	provide() { return {
 		map: this,
+		mapObject: null,
 	}},
 	props: {
 		/**
@@ -228,6 +229,8 @@ export default {
 
 			console.log('Creating Google Maps Instance', this.$el, options);
 			this.mapObject = new google.maps.Map(this.$el, options);
+			// const {MaxZoomService} = await google.maps.importLibrary("maps")
+
 			//if (_.isFunction(this.mapObject.getMapCapabilities)) console.log('Map Capabilities', this.mapObject.getMapCapabilities());
 
 			this.mapObject.addListener('click', e => this.$emit('click', [e.latLng.lat(), e.latLng.lng()]));

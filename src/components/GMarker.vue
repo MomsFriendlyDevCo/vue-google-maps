@@ -86,6 +86,7 @@ export default {
 	},
 	// TODO: Encapsulate for use with HtmlMarker also
 	methods: {
+		// TODO: Offer ghost version of the marker which is removed and replaced with the actual one once placed
 		startCreate() {
 			this.map.mapObject.setOptions({ draggableCursor: 'crosshair' });
 			this.listeners.handleMapClick = this.map.mapObject.addListener('click', e => {

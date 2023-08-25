@@ -33,6 +33,7 @@ export default {
 		},
 	},
 	methods: {
+		// TODO: Offer ghost marker which is removed once drawing beings
 		startCreate() {
 			this.map.mapObject.setOptions({ draggableCursor: 'crosshair' });
 

@@ -69,7 +69,7 @@ export default {
 				if (this.mapObject.getCenter().equals(new google.maps.LatLng(destLatLng))) // Check if we're already there
 					return Promise.resolve();
 			}
-			//console.log('smoothPanTo', destLatLng);
+			console.log('smoothPanTo', destLatLng);
 
 			// Helper Functions {{{
 			/**
@@ -113,17 +113,16 @@ export default {
 			const willAnimatePanTo = (destLatLng, optionalZoomLevel) => {
 				if (this.mapObject.getBounds() === null) return true; // FIXME: Does no bounds really mean always true?
 
-				var dimen = getMapDimenInPixels()
+				const dimen = getMapDimenInPixels();
+				const mapCenter = this.mapObject.getCenter();
+				optionalZoomLevel = !!optionalZoomLevel ? optionalZoomLevel : this.mapObject.getZoom();
 
-				var mapCenter = this.mapObject.getCenter()
-				optionalZoomLevel = !!optionalZoomLevel ? optionalZoomLevel : this.mapObject.getZoom()
+				const destPixel = getPixel(destLatLng, optionalZoomLevel);
+				const mapPixel = getPixel(mapCenter, optionalZoomLevel);
+				const diffX = Math.abs(destPixel.x - mapPixel.x);
+				const diffY = Math.abs(destPixel.y - mapPixel.y);
 
-				var destPixel = getPixel(destLatLng, optionalZoomLevel)
-				var mapPixel = getPixel(mapCenter, optionalZoomLevel)
-				var diffX = Math.abs(destPixel.x - mapPixel.x)
-				var diffY = Math.abs(destPixel.y - mapPixel.y)
-
-				return (diffX < dimen.width && diffY < dimen.height)
+				return (diffX < dimen.width && diffY < dimen.height);
 			};
 
 			/**
@@ -140,14 +139,33 @@ export default {
 			 * about it.
 			 **/
 			const getOptimalZoomOut = (latLng, currentZoom) => {
-				// TODO: Check "minZoom"?
-				if(willAnimatePanTo(latLng, currentZoom - 1)) {
-					return currentZoom - 1
+				//console.log('getOptimalZoomOut', latLng, currentZoom);
+				let res;
+				if (willAnimatePanTo(latLng, currentZoom - 1)) {
+					res = currentZoom - 1;
 				} else if(willAnimatePanTo(latLng, currentZoom - 2)) {
-					return currentZoom - 2
+					res = currentZoom - 2;
 				} else {
-					return currentZoom - 3
+					res = currentZoom - 3;
 				}
+
+				/*
+				// TODO: Good, but async...
+				this.mapMaxZoomService = new google.maps.MaxZoomService();
+				this.mapMaxZoomService.getMaxZoomAtLatLng(latLng)
+					.then(maxZoom => {
+						console.log('maxZoom', maxZoom);
+					})
+					.catch(e => {
+						console.log('maxZoom.e', e);
+					})
+				*/
+
+				const min = Math.min(this.mapObject.minZoom, 1);
+				const max = Math.max(this.mapObject.maxZoom, 24);
+				const out = Math.min(Math.max(res, max), min);
+				//console.log('getOptimalZoomOut.out', out);
+				return out;
 			};
 			// }}}
 
@@ -166,8 +184,10 @@ export default {
 				return new Promise((resolve, reject) => {
 					const zoomIn = () => {
 						//console.log('smoothPanTo.zoomIn', this.pendingZoom, this.mapObject.getZoom());
-						if(this.mapObject.getZoom() < this.pendingZoom) {
-							this.mapObject.setZoom(Math.min(this.mapObject.getZoom() + 3, this.pendingZoom));
+						const zoom = this.mapObject.getZoom();
+						if(zoom < this.pendingZoom) {
+							// FIXME: hmm? We already know one is less than other, before adding 3
+							this.mapObject.setZoom(Math.min(zoom + 3, this.pendingZoom));
 							this.checkCenter(destLatLng);
 						} else {
 							if (listener) google.maps.event.removeListener(listener);
@@ -176,20 +196,32 @@ export default {
 							//this.mapObject.setOptions({draggable: true, zoomControl: true, scrollwheel: true, disableDoubleClickZoom: false})
 	
 							//console.log('smoothPanToWorkAround.resolve', destLatLng);
+							this.mapObject.setZoom(this.pendingZoom);
+							this.checkCenter(destLatLng);
 							resolve();
 						}
 					};
 	
 					const zoomOut = () => {
 						//console.log('smoothPanTo.zoomOut', willAnimatePanTo(destLatLng));
-						if(willAnimatePanTo(destLatLng)) {
+						const zoom = this.mapObject.getZoom();
+						const optimal = getOptimalZoomOut(destLatLng, this.mapObject.getZoom());
+						//console.log('smoothPanTo.zoomOut.optimal', zoom, optimal);
+						if(zoom === optimal) {
+							//console.log('smoothPanTo.zoomOut', 'zoomIn', destLatLng);
+							if (listener) google.maps.event.removeListener(listener);
+							listener = google.maps.event.addListener(this.mapObject, 'idle', zoomIn);
+							zoomIn();
+						} else if (willAnimatePanTo(destLatLng)) {
+							//console.log('smoothPanTo.zoomOut', 'pan', destLatLng);
 							if (listener) google.maps.event.removeListener(listener);
 							this.doPan(destLatLng).then(() => {
 								listener = google.maps.event.addListener(this.mapObject, 'idle', zoomIn);
 								zoomIn();
 							});
 						} else {
-							this.mapObject.setZoom(getOptimalZoomOut(destLatLng, this.mapObject.getZoom()));
+							//console.log('smoothPanTo.zoomOut', 'zoom', zoom, optimal);
+							this.mapObject.setZoom(optimal);
 						}
 					};
 	
@@ -201,7 +233,16 @@ export default {
 				})
 			}
 
-			this.pendingZoom = this.mapObject.getZoom();
+			const zoom = this.mapObject.getZoom();
+			// Do nothing when on outer most zoom levels
+			if (zoom <= this.mapObject.minZoom + 3) {
+				//console.log('smoothPanTo.min', destLatLng, zoom);
+				return Promise.resolve()
+					.then(() => this.pendingSmooth)
+					.finally(() => this.pendingSmooth = null);
+			}
+
+			this.pendingZoom = zoom;
 			return Promise.resolve()
 				.then(() => this.pendingSmooth)
 				.then(() => this.pendingSmooth = (willAnimatePanTo(destLatLng)) ? this.doPan(destLatLng) : smoothPanToWorkAround(destLatLng))
