@@ -49,12 +49,13 @@ export default {
 			if (this.url) {
 				// FIXME: What happens to the last mode instance? It will be re-applied but are we orphaning anything?
 				const options = _.merge(
-					_.omit(this.options, ['tileSize']),
+					{},
 					{
 						maxZoom: 24,
 						minZoom: 0,
 						opacity: 1,
 					},
+					_.omit(this.options, ['tileSize']),
 				);
 
 				this.mapObject = new google.maps.ImageMapType({
