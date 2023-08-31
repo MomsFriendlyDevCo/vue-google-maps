@@ -78,7 +78,7 @@ export default {
 			//script.async = true; // NOTE: Fires callback with or without...
 			script.type = 'text/javascript';
 			// TODO: Property to specifiy which libraries we're interested in loading
-			script.src = 'https://maps.googleapis.com/maps/api/js?v=beta&callback=initGoogleMaps';
+			script.src = 'https://maps.googleapis.com/maps/api/js?v=3&callback=initGoogleMaps';
 			if (this.$props.libraries) script.src += `&libraries=${this.$props.libraries}`;
 			if (this.$props.apiKey) script.src += `&key=${this.$props.apiKey}`;
 			document.body.appendChild(script);

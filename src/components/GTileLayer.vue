@@ -48,6 +48,15 @@ export default {
 			$debug('$watchAll.title/url', this.title, this.url, this.options);
 			if (this.url) {
 				// FIXME: What happens to the last mode instance? It will be re-applied but are we orphaning anything?
+				const options = _.merge(
+					_.omit(this.options, ['tileSize']),
+					{
+						maxZoom: 24,
+						minZoom: 0,
+						opacity: 1,
+					},
+				);
+
 				this.mapObject = new google.maps.ImageMapType({
 					getTileUrl: (coord, zoom) => {
 						if (!this.visible) return;
@@ -61,18 +70,12 @@ export default {
 							.replace('{y}', coord.y)
 							.replace('{z}', zoom);
 					},
-					// TODO: Separate X/Y?
+					name: this.title,
 					tileSize: new google.maps.Size(
 						(_.has(this.options, 'tileSize')) ? parseInt(this.options.tileSize) : 256,
 						(_.has(this.options, 'tileSize')) ? parseInt(this.options.tileSize) : 256,
 					),
-					maxZoom: (_.has(this.options, 'maxZoom')) ? parseInt(this.options.maxZoom) : 20,
-					minZoom: (_.has(this.options, 'minZoom')) ? parseInt(this.options.minZoom) : 0,
-					opacity: (_.has(this.options, 'opacity')) ? parseInt(this.options.opacity) : 1,
-					// @ts-ignore TODO 'radius' does not exist in type 'ImageMapTypeOptions'
-					//radius: 1738000,
-					name: this.title,
-					...this.options,
+					...options,
 				});
 			}
 
