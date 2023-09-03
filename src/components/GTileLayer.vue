@@ -46,18 +46,25 @@ export default {
 	mounted() {
 		this.$watchAll(['title', 'url'], () => {
 			$debug('$watchAll.title/url', this.title, this.url, this.options);
+			const options = _.merge(
+				{},
+				{
+					// TODO: Get default min/maxZoom from the map instance?
+					maxZoom: 24,
+					minZoom: 0,
+					opacity: 1,
+				},
+				{
+					tileSize: new google.maps.Size(
+						(_.has(this.options, 'tileSize')) ? parseInt(this.options.tileSize) : 256,
+						(_.has(this.options, 'tileSize')) ? parseInt(this.options.tileSize) : 256,
+					),
+				},
+				_.omit(this.options, ['tileSize']),
+			);
+
 			if (this.url) {
 				// FIXME: What happens to the last mode instance? It will be re-applied but are we orphaning anything?
-				const options = _.merge(
-					{},
-					{
-						maxZoom: 24,
-						minZoom: 0,
-						opacity: 1,
-					},
-					_.omit(this.options, ['tileSize']),
-				);
-
 				this.mapObject = new google.maps.ImageMapType({
 					getTileUrl: (coord, zoom) => {
 						if (!this.visible) return;
@@ -66,16 +73,13 @@ export default {
 						// "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
 						return this.url
 							.replace('{r}', '') // TODO: What is this? Tag?
-							.replace('{s}', _.has(this.options, 'subdomains') ? _.sample(this.options.subdomains) : 'a')
+							.replace('{s}', _.has(options, 'subdomains') ? _.sample(options.subdomains) : 'a')
 							.replace('{x}', coord.x)
 							.replace('{y}', coord.y)
+							//.replace('{z}', Math.min(Math.max(zoom, options.maxZoom), options.minZoom)); // FIXME: If attempting to pin to the last available zoom level, x/y will then not be available...
 							.replace('{z}', zoom);
 					},
 					name: this.title,
-					tileSize: new google.maps.Size(
-						(_.has(this.options, 'tileSize')) ? parseInt(this.options.tileSize) : 256,
-						(_.has(this.options, 'tileSize')) ? parseInt(this.options.tileSize) : 256,
-					),
 					...options,
 				});
 			}
@@ -89,9 +93,9 @@ export default {
 					// NOTE: "mapTypeId" may have been set before this mode existed; Set it again now.
 					if (this.mapObject) this.map.mapObject.mapTypes.set(this.title, this.mapObject);
 					// FIXME: Force re-fetching of tiles when the existing layer has a cache for this zoom level
-					$debug('getMapTypeId', this.map.mapObject.getMapTypeId(), this.title, this.options);
+					$debug('getMapTypeId', this.map.mapObject.getMapTypeId(), this.title, options);
 					if (this.map.mapObject.getMapTypeId() !== this.title) this.map.mapObject.setMapTypeId(this.title);
-					if (this.options) this.map.mapObject.setOptions(this.options);
+					if (options) this.map.mapObject.setOptions(options);
 					break;
 			}
 
