@@ -58,5 +58,13 @@ export default {
 			strokeOpacity: (this.stroke) ? this.opacity : undefined,
 			strokeWeight: (this.stroke) ? this.weight : undefined,
 		};
+
+		this.$watch('pathOptions', () => {
+			this.mapObject.setOptions({
+				strokeColor: this.pathOptions.strokeColor,
+				strokeOpacity: this.pathOptions.strokeOpacity,
+				strokeWeight: this.pathOptions.strokeWeight,
+			});
+		}, { deep: true });
 	}
 };

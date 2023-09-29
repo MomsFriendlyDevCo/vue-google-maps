@@ -150,6 +150,14 @@ export default {
 		this.$watch('visible', () => this.mapObject.setVisible(this.visible));
 		this.$watch('zIndex', () => this.mapObject.setZIndex(this.zIndex));
 
+		this.$watchAll(['label', 'icon', 'shape'], () => {
+			this.mapObject.setOptions({
+				label: this.label,
+				icon: this.icon,
+				shape: this.shape,
+			})
+		}, { deep: true });
+
 		// TODO: Some kind of binding helper?
 
 		// Google Maps events:

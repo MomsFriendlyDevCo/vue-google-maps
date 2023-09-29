@@ -76,6 +76,13 @@ export default {
 		//this.$watch('zIndex', () => this.mapObject.setZIndex(this.zIndex)); // Method does not exist in Poly
 		this.$watch('latLngs', () => this.mapObject.setPaths(new google.maps.MVCArray(this.path)), { deep: true });
 
+		this.$watchAll(['fillColor', 'fillOpacity'], () => {
+			this.mapObject.setOptions({
+				fillColor: this.fillColor,
+				fillOpacity: this.fillOpacity,
+			})
+		});
+
 		if (this.editable && this.path.length === 0) this.startCreate();
 
 		this.mapObject.addListener('dragend', e => {
