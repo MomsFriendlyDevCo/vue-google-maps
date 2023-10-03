@@ -55,7 +55,6 @@ export default {
 		this.mapObject = new google.maps.Polygon({
 			...this.pathOptions,
 			clickable: this.clickable,
-			draggable: this.draggable,
 			fillColor: this.fillColor,
 			fillOpacity: this.fillOpacity,
 			clickable: this.clickable,
