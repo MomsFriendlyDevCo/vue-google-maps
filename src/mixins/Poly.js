@@ -51,6 +51,7 @@ export default {
 				if (pathIdx === 0) {
 					path.setAt(pathIdx++, e.latLng);
 
+					// FIXME: Only listening to events on top of polyline being created
 					this.listeners.handleMapMousemove = this.map.mapObject.addListener('mousemove', e => {
 						//console.log('mousemove', e.latLng.toUrlValue(6), pathIdx);
 						path.setAt(pathIdx, e.latLng);
@@ -85,8 +86,8 @@ export default {
 					});
 
 					// End creation mode if position is updated externally
-					this.listeners.handlePosition = this.$watch('position', () => {
-						if (this.position) this.finishCreate();
+					this.listeners.handlePosition = this.$watch('latLngs', () => {
+						if (this.latLngs && this.latLngs.length > 0) this.finishCreate();
 					});
 				} else {
 					pathIdx++;
