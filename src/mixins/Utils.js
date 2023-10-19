@@ -10,8 +10,8 @@ export default {
 			// NOTE: All of this is simply so that the API supports same objects as LeafletJS. Can likely be removed.
 			if (_.isArray(latLng)) {
 				return {
-					lat: latLng[0],
-					lng: latLng[1],
+					lat: latLng[1],
+					lng: latLng[0],
 				};
 			} else if (_.isObject(latLng) && _.has(latLng, 'lat') && _.has(latLng, 'lng')) {
 				return latLng;
