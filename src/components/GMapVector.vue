@@ -177,11 +177,6 @@ export default {
 		mapTypeId: {
 			type: String,
 		},
-
-		options: {
-			type: Object,
-			default: null,
-		},
 	},
 	data() { return {
 		ready: false,
