@@ -224,7 +224,7 @@ export default {
 			this.mapObject = new google.maps.Map(this.$el, options);
 			//if (_.isFunction(this.mapObject.getMapCapabilities)) console.log('Map Capabilities', this.mapObject.getMapCapabilities());
 
-			this.mapObject.addListener('click', e => this.$emit('click', [e.latLng.lat(), e.latLng.lng()]));
+			this.mapObject.addListener('click', e => this.$emit('click', [e.latLng.lng(), e.latLng.lat()]));
 
 			this.mapObject.addListener('heading_changed', e => {
 				if (this.pendingSmooth) return;
@@ -235,7 +235,7 @@ export default {
 			this.mapObject.addListener('center_changed', e => {
 				if (this.pendingSmooth) return;
 
-				this.$emit('moveend', [this.mapObject.getCenter().lat(), this.mapObject.getCenter().lng()]);
+				this.$emit('moveend', [this.mapObject.getCenter().lng(), this.mapObject.getCenter().lat()]);
 			});
 
 			this.mapObject.addListener('zoom_changed', e => {
@@ -244,7 +244,7 @@ export default {
 				this.$emit('zoomend', this.mapObject.getZoom());
 			});
 
-			this.mapObject.addListener('mousemove', e => this.$emit('mousemove', [e.latLng.lat(), e.latLng.lng()]));
+			this.mapObject.addListener('mousemove', e => this.$emit('mousemove', [e.latLng.lng(), e.latLng.lat()]));
 
 			this.initWatchers();
 
