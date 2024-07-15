@@ -36,10 +36,10 @@ export default {
 					this.mapObject.setOptions({
 						restriction: {
 							latLngBounds: {
-								north: this.maxBounds[0][0],
-								south: this.maxBounds[1][0],
-								west: this.maxBounds[1][1],
-								east: this.maxBounds[0][1],
+								north: this.maxBounds[0][1],
+								south: this.maxBounds[1][1],
+								west: this.maxBounds[1][0],
+								east: this.maxBounds[0][0],
 							},
 							strictBounds: true,
 						}

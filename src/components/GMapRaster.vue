@@ -212,10 +212,10 @@ export default {
 			if (this.maxBounds && this.maxBounds.length === 2 && this.maxBounds[0] && this.maxBounds[0].length === 2 && this.maxBounds[1] && this.maxBounds[1].length === 2)
 				options.restriction = {
 					latLngBounds: {
-						north: this.maxBounds[0][0],
-						south: this.maxBounds[1][0],
-						west: this.maxBounds[1][1],
-						east: this.maxBounds[0][1],
+						north: this.maxBounds[0][1],
+						south: this.maxBounds[1][1],
+						west: this.maxBounds[1][0],
+						east: this.maxBounds[0][0],
 					},
 					strictBounds: true,
 				};
